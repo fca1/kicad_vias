@@ -1,0 +1,3 @@
+#!/bin/sh
+# Chaque commit doit être installé depuis son archive, jamais depuis le checkout.
+exec 'D:/kicad/bin/python.exe' tools/install_plugin.py --commit HEAD
