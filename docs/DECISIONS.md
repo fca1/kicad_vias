@@ -57,3 +57,12 @@ physique vue depuis Top ou Bottom. Les valeurs précises et UUID restent dans le
 registre interne, indispensable à la reprise sûre des objets. La case continue
 d'être calculée avant arrondi ; un point proche d'une limite peut donc s'afficher
 sur cette limite sans changer de case.
+
+## 18 octobre 2026 — Résultats de publication et de mise à jour
+
+PR nº 1 ouverte : https://github.com/fca1/kicad_vias/pull/1, branche publiée
+codex/kicad-via ; pas de fusion automatique vers main. Le tableau existant a
+été simplifié avec sauvegarde privée, 18 accès conservés. Contrôle Top/Bottom
+du rendu et de l'arrondi réussi. Les 17 tests restent réussis.
+Le refus IPC « busy » venait de deux dialogues ouverts ; fermeture sans
+application puis rechargement RAS_OK. Aucun correctif de code pour ce refus.

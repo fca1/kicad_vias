@@ -53,7 +53,7 @@ On va même prendre un pas de 20 mm au lieu de 10 mm, ça permettra d'alléger c
 
 ```text
 <send_user_message_question_reply>
-[{"questionItemId":"["request_user_input_async","call_cc3d4dc1a8b946509e71a2879cd763bc",0]","question":"Le PCB est encore « Unsaved » et mes commandes ne permettent pas d’en récupérer une copie depuis l’éditeur. Pouvez-vous l’enregistrer en .kicad_pcb (Ctrl+Maj+S), puis m’indiquer le chemin ? Je pourrai alors ajouter les repères sur une copie fidèle de votre carte.","answer":"utilise au maximum ipc"}]
+[{"questionItemId":"[\"request_user_input_async\",\"call_cc3d4dc1a8b946509e71a2879cd763bc\",0]","question":"Le PCB est encore « Unsaved » et mes commandes ne permettent pas d’en récupérer une copie depuis l’éditeur. Pouvez-vous l’enregistrer en .kicad_pcb (Ctrl+Maj+S), puis m’indiquer le chemin ? Je pourrai alors ajouter les repères sur une copie fidèle de votre carte.","answer":"utilise au maximum ipc"}]
 </send_user_message_question_reply>
 ```
 
@@ -61,7 +61,7 @@ On va même prendre un pas de 20 mm au lieu de 10 mm, ça permettra d'alléger c
 
 ```text
 <send_user_message_question_reply>
-[{"questionItemId":"["request_user_input_async","call_16464e44235f482ca51a3792f3e937fd",0]","question":"J’ai confirmé que le canal IPC appartient au gestionnaire KiCad (PID 30900), pas à l’éditeur PCB (PID 33708). Pour accéder à votre carte en mémoire par IPC, fermez uniquement le gestionnaire KiCad en laissant le PCB ouvert, puis dans les préférences de l’éditeur, désactivez/réactivez le serveur API IPC. Dites-moi quand c’est fait ; aucune sauvegarde de la carte n’est nécessaire pour cet essai.","answer":"API enabled mais je n'ai pas trouvé IPC"}]
+[{"questionItemId":"[\"request_user_input_async\",\"call_16464e44235f482ca51a3792f3e937fd\",0]","question":"J’ai confirmé que le canal IPC appartient au gestionnaire KiCad (PID 30900), pas à l’éditeur PCB (PID 33708). Pour accéder à votre carte en mémoire par IPC, fermez uniquement le gestionnaire KiCad en laissant le PCB ouvert, puis dans les préférences de l’éditeur, désactivez/réactivez le serveur API IPC. Dites-moi quand c’est fait ; aucune sauvegarde de la carte n’est nécessaire pour cet essai.","answer":"API enabled mais je n'ai pas trouvé IPC"}]
 </send_user_message_question_reply>
 ```
 
@@ -69,7 +69,7 @@ On va même prendre un pas de 20 mm au lieu de 10 mm, ça permettra d'alléger c
 
 ```text
 <send_user_message_question_reply>
-[{"questionItemId":"["request_user_input_async","call_d17f0cae6e3c43d3a9c30d239689a18d",0]","question":"Dans l’éditeur PCB, décochez « API enabled », validez les préférences, puis rouvrez-les, recochez cette même option et validez. Cela devrait démarrer le canal IPC de l’éditeur. Prévenez-moi ensuite.","answer":"ok"}]
+[{"questionItemId":"[\"request_user_input_async\",\"call_d17f0cae6e3c43d3a9c30d239689a18d\",0]","question":"Dans l’éditeur PCB, décochez « API enabled », validez les préférences, puis rouvrez-les, recochez cette même option et validez. Cela devrait démarrer le canal IPC de l’éditeur. Prévenez-moi ensuite.","answer":"ok"}]
 </send_user_message_question_reply>
 ```
 
@@ -126,3 +126,13 @@ Je regarde le fichier de sortie. Il y a beaucoup trop de choses. Donc le repère
 Je vais réduire le tableau à cinq colonnes : **Repère, Net, Case, X (mm), Y (mm)**, avec des coordonnées arrondies au millimètre.
 
 Les deux séries actuelles correspondent aux coordonnées internes KiCad et à celles de la grille vue depuis la face choisie. Je conserverai celles de la grille, pour retrouver les vias avec les repères imprimés.
+
+## Suite — assistant — 18 octobre 2026
+
+Le tableau est désormais limité aux cinq colonnes demandées, et les 17 tests passent. Je vais réinstaller cette version et mettre à jour le fichier de sortie existant, avec une sauvegarde de son ancien contenu.
+
+## Suite — assistant — 18 octobre 2026
+
+Le fichier existant a été simplifié : il conserve ses 18 accès, avec les coordonnées sans décimales. La [PR GitHub](https://github.com/fca1/kicad_vias/pull/1) contient le plugin et la mémoire **epi-git**.
+
+KiCad refuse pour l’instant le rechargement IPC en se déclarant occupé. Je vais vérifier la fenêtre avec la compétence **computer-use** pour identifier ce qui le bloque.

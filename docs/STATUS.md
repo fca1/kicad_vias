@@ -12,10 +12,24 @@ retirées de l'affichage et conservées dans le registre interne. La sélection
 et le placement des vias ne changent pas. 17 tests natifs relancés : réussis
 le 18 octobre 2026 après cette modification (2,826 s).
 
-En cours : commit de l'intégration, installation depuis ce commit et rechargement
-IPC ; simplification du tableau existant avec sauvegarde ; publication d'une PR.
-Ces actions seront vérifiées avant la fin de tâche. Aucun PCB n'est destiné au
-Git public. La carte originale ne doit pas être enregistrée pour cette mise à jour.
+Réalisé et vérifié : commit fonctionnel `6e8abaa`, installation par le hook avec
+neuf fichiers contrôlés SHA-256 ; contrôle direct du rendu à cinq colonnes,
+arrondis et échappement des noms pour Top/Bottom. Tableau existant simplifié :
+18 accès conservés, sauvegarde privée dans `.local/` avant remplacement.
+Aucune génération ni sauvegarde du PCB original pendant cette mise à jour.
+
+Rechargement IPC initialement refusé car le sélecteur de fichier et le dialogue
+Kicad_Via étaient ouverts (observés par Computer Use). Fermeture de ces deux
+boîtes par Échap, puis `common.API.pluginsReload` : RAS_OK. Aucun redémarrage.
+La mise à jour documentaire suivante réinstalle aussi son propre commit ; la
+version exacte installée et ses empreintes sont dans `.local/last_install.json`.
+
+Branche publiée et [PR nº 1](https://github.com/fca1/kicad_vias/pull/1) ouverte,
+contrôlée fusionnable. La fusion vers main reste à effectuer après revue.
+Mémoire accessible sur cette branche ; les PCB, sorties et registres locaux
+ne sont pas suivis. Aucun autre changement de comportement en attente identifié.
+Prochaine action : revue de la PR ; compléter l'historique si un export du chat
+est fourni. Les preuves ci-dessous restent un historique des étapes antérieures.
 
 ## État précédent conservé comme preuve historique
 
