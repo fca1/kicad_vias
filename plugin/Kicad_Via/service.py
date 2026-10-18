@@ -174,18 +174,29 @@ def generate(board,layer,opt,path):
         # Le nom ne suffit pas : ne pas récupérer une ancienne couche qui a
         # reçu entre-temps du contenu étranger après la fusion.
         old_layer=None
-    if any(l not in (layer,old_layer) and board.GetLayerName(l)==name for l in USER_LAYERS):
+    # Une migration peut conserver un aperçu ancien ET un repérage fusionné.
+    # La source vide de ce dernier garde alors le nom réservé. Seule cette
+    # couche connue du registre et restée vide peut rendre son ancien nom.
+    reserved=merged.get('source_layer')
+    if (reserved not in USER_LAYERS or reserved in (layer,old_layer)
+            or layer_objects(board,reserved) or board.GetLayerName(reserved)!=name):
+        reserved=None
+    if any(l not in (layer,old_layer,reserved) and board.GetLayerName(l)==name for l in USER_LAYERS):
         staged.unlink(missing_ok=True)
         raise ValueError('Ce nom de couche est déjà utilisé ailleurs : '+name)
     enabled=p.LSET(board.GetEnabledLayers()); visible=p.LSET(board.GetVisibleLayers())
     old_name=board.GetLayerName(layer); removed=None; group=None; added=[]
     previous_layer_name=board.GetLayerName(old_layer) if old_layer is not None else None
+    reserved_name=board.GetLayerName(reserved) if reserved is not None else None
     try:
         # Renommer n'est pas proposé par IPC dans KiCad 10.0.7 : API native.
         layers=board.GetEnabledLayers(); layers.AddLayer(layer); board.SetEnabledLayers(layers)
         if previous: removed=remove_record(board,previous)
         if old_layer is not None and old_layer!=layer:
             board.SetLayerName(old_layer,(previous or merged)['previous_name'])
+        if reserved is not None:
+            if not board.SetLayerName(reserved,merged['previous_name']):
+                raise ValueError('KiCad refuse de libérer le nom de l’ancienne couche vide.')
         if not board.SetLayerName(layer,name): raise ValueError('KiCad refuse le nom de couche.')
         for it in plan['items']: board.Add(it); added.append(it)
         group=p.PCB_GROUP(board); group.SetName(name)
@@ -207,6 +218,7 @@ def generate(board,layer,opt,path):
         if group is not None: (ownership_root()/(uid(group)+'.json')).unlink(missing_ok=True)
         board.SetLayerName(layer,old_name)
         if old_layer is not None and old_layer!=layer: board.SetLayerName(old_layer,previous_layer_name)
+        if reserved is not None: board.SetLayerName(reserved,reserved_name)
         board.SetEnabledLayers(enabled); board.SetVisibleLayers(visible)
         staged.unlink(missing_ok=True)
         raise

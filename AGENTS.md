@@ -5,7 +5,10 @@ reprendre le projet ; les échanges disponibles et leurs limites sont dans `docs
 Rédiger la documentation et les commentaires en français.
 
 L'utilisateur a autorisé le plugin Top/Bottom, ses drapeaux, son tableau et sa
-simplification à Repère, Net, Case, X/Y entiers en mm. Avant toute nouvelle
+simplification à Repère, Net, Case, X/Y entiers en mm. Le 18 octobre 2026, il
+ajoute les noms A3.1, l'export graphique ULP/RUN avec copie presse-papiers sur
+clic et autorise la fusion de la PR nº 1 vers main avec réinstallation exacte.
+Avant toute nouvelle
 création, modification ou suppression de code, tests, scripts ou configuration
 exécutable, décrire les changements envisagés et obtenir l'accord explicite
 préalable de l'utilisateur. Une demande d'analyse ou de documentation ne donne

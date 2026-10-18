@@ -29,7 +29,7 @@ def install(ref='HEAD'):
             destination.write_bytes(z.read(name))
     build={'name':'Kicad_Via','version':'0.1.0','commit':commit}
     (stage/'_build.json').write_text(json.dumps(build,indent=2),encoding='utf-8')
-    for required in ('__init__.py','action.py','geometry.py','service.py','model.py','icon.png','icon_dark.png'):
+    for required in ('__init__.py','action.py','geometry.py','service.py','model.py','fusion.py','icon.png','icon_dark.png'):
         if not (stage/required).is_file(): raise ValueError('Paquet incomplet : '+required)
     expected={str(f.relative_to(stage)):hashlib.sha256(f.read_bytes()).hexdigest() for f in stage.rglob('*') if f.is_file()}
     target=TARGET.resolve(); parent=(Path.home()/'Documents/KiCad/10.0/3rdparty/plugins').resolve()

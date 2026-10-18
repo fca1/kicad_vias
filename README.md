@@ -30,14 +30,14 @@ par le plugin sont remplacées lors d'une nouvelle fusion de la même face.
 
 ## Convention
 
-**C2-1** = colonne C, ligne 2, premier accès de la case de 20 × 20 mm.
+**C2.1** = colonne C, ligne 2, premier accès de la case de 20 × 20 mm.
 Le suffixe suit les positions dans la case, pas l'ordre alphabétique des nets.
 Les colonnes continuent après Z : AA, AB…
 
 La grille est vue de la face sélectionnée : X à droite, Y vers le haut ;
 origine au coin inférieur gauche de l'enveloppe Edge.Cuts de cette vue.
 Pour Bottom, X est inversé et les textes sont miroités dans le fichier KiCad
-afin d'être lisibles depuis le dessous. Un repère C2-1 peut exister sur chaque
+afin d'être lisibles depuis le dessous. Un repère C2.1 peut exister sur chaque
 face : son tableau Top ou Bottom l'identifie sans ambiguïté.
 
 Le tableau comporte cinq colonnes : **Repère, Net, Case, X (mm), Y (mm)**.
@@ -45,6 +45,38 @@ Les coordonnées de la vue choisie sont arrondies au millimètre, sans décimale
 La face figure dans le titre ; les données techniques restent internes au plugin.
 Un fichier existant n'est réécrit que s'il est déjà un tableau Kicad_Via de la
 même face. Une liste Bottom n'écrase pas une liste Top.
+
+## Copier les labels et dessins vers Fusion
+
+1. **Générer / remplacer** le repérage pour obtenir les nouveaux noms **A3.1**
+   (les objets déjà présents ne sont pas renommés au chargement du plugin).
+2. Cliquer **Copier vers Fusion…**, choisir le BRD/FBRD source correspondant à
+   la carte et le dossier de sortie, puis **Préparer pour Fusion**.
+3. Cliquer **Copier la commande RUN**, coller cette commande dans le PCB cible
+   Fusion et la lancer. L'ULP contrôle les composants de la cible avant de proposer
+   l'ajout sur **tPlace** (Top) ou **bPlace** (Bottom).
+
+Le même parcours que [kicad_plugin_fusion2kicad](https://github.com/fca1/kicad_plugin_fusion2kicad)
+est repris : fichier ULP local, commande RUN visible et copie sur clic uniquement.
+Aucune connexion à Fusion, aucun changement du PCB pendant la préparation.
+Le BRD/FBRD fournit le repère natif ; l'alignement est vérifié sur les origines
+composants (tolérance 0,01 mm). Au moins deux origines distinctes sont requises.
+Les coordonnées entières du tableau ne sont pas utilisées pour dessiner.
+
+L'export prend l'aperçu courant de la face, sinon son dernier repérage fusionné.
+Il conserve les ajustements manuels des objets reconnus par UUID. Les lettres,
+ovales, traits de rappel et grille sont copiés comme traits graphiques, avec la
+police vectorielle KiCad et son miroir. Les arcs sont discrétisés à 5 µm d'erreur
+de corde maximale. Les textes à contours et dessins autres que segments/arcs
+sont refusés. Les labels deviennent des traits, pas des textes Fusion éditables.
+
+Un dossier neuf conserve chaque livraison. La copie est **additive** : lancer
+une seule fois pour éviter les doublons ; elle ne remplace aucune ancienne
+sérigraphie Fusion et ne touche pas aux pistes, vias, pads ou nets. Les contrôles
+portent sur l'implantation source et cible, pas sur l'ensemble de leurs règles.
+La génération est testée ; l'exécution de l'ULP dans Fusion reste à valider.
+Références Autodesk : [RUN](https://help.autodesk.com/cloudhelp/ENU/Fusion-ECAD/files/ECD-CLI-R.htm),
+[UL_BOARD](https://help.autodesk.com/cloudhelp/ENU/Fusion-ECAD/files/ECD-ULP-BOARD.htm).
 
 ## Installation et suivi
 

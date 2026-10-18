@@ -6,11 +6,75 @@ import pcbnew as p
 import wx
 from .model import Options
 from . import service
+from . import fusion
 
 
 def version():
     path=Path(__file__).with_name('_build.json')
     return json.loads(path.read_text(encoding='utf-8'))['commit'][:7] if path.exists() else 'développement'
+
+
+class FusionDialog(wx.Dialog):
+    def __init__(self,parent,board,side,folder):
+        super().__init__(parent,title='Kicad_Via — copie vers Fusion — '+side)
+        self.board=board;self.side=side
+        outer=wx.BoxSizer(wx.VERTICAL)
+        note=wx.StaticText(self,label='1. Choisir le BRD/FBRD correspondant à la carte KiCad.\n'
+                           '2. Préparer les labels et dessins de cette face.\n'
+                           '3. Copier le RUN et le lancer dans le PCB cible Fusion.')
+        outer.Add(note,0,wx.ALL,12)
+        self.source=wx.FilePickerCtrl(self,message='Source Fusion pour vérifier l’alignement',
+                                     wildcard='Carte Fusion (*.brd;*.fbrd)|*.brd;*.fbrd',
+                                     style=wx.FLP_OPEN|wx.FLP_FILE_MUST_EXIST|wx.FLP_USE_TEXTCTRL)
+        outer.Add(wx.StaticText(self,label='Carte source Fusion'),0,wx.LEFT,12)
+        outer.Add(self.source,0,wx.EXPAND|wx.ALL,12)
+        self.folder=wx.DirPickerCtrl(self,path=folder,style=wx.DIRP_USE_TEXTCTRL)
+        outer.Add(wx.StaticText(self,label='Dossier des fichiers à exécuter'),0,wx.LEFT,12)
+        outer.Add(self.folder,0,wx.EXPAND|wx.ALL,12)
+        self.command=wx.TextCtrl(self,style=wx.TE_READONLY)
+        outer.Add(self.command,0,wx.EXPAND|wx.ALL,12)
+        self.result=wx.StaticText(self,label='La préparation conserve le dessin KiCad et ne modifie pas Fusion.')
+        outer.Add(self.result,0,wx.EXPAND|wx.ALL,12)
+        buttons=wx.BoxSizer(wx.HORIZONTAL)
+        self.prepare=wx.Button(self,label='Préparer pour Fusion')
+        self.copy=wx.Button(self,label='Copier la commande RUN');self.copy.Disable()
+        close=wx.Button(self,wx.ID_CANCEL,label='Fermer')
+        for button in (self.prepare,self.copy,close):buttons.Add(button,0,wx.ALL,5)
+        outer.Add(buttons,0,wx.ALIGN_RIGHT|wx.ALL,6)
+        self.prepare.Bind(wx.EVT_BUTTON,self.on_prepare)
+        self.copy.Bind(wx.EVT_BUTTON,self.on_copy)
+        self.source.Bind(wx.EVT_FILEPICKER_CHANGED,self.invalidate)
+        self.folder.Bind(wx.EVT_DIRPICKER_CHANGED,self.invalidate)
+        self.source.GetTextCtrl().Bind(wx.EVT_TEXT,self.invalidate)
+        self.folder.GetTextCtrl().Bind(wx.EVT_TEXT,self.invalidate)
+        self.SetSizer(outer);self.SetMinSize((720,-1));self.Fit();self.CentreOnParent()
+
+    def invalidate(self,event):
+        self.command.SetValue('');self.copy.Disable()
+        event.Skip()
+
+    def on_prepare(self,event):
+        self.command.SetValue('');self.copy.Disable()
+        try:
+            with wx.BusyCursor():
+                result=fusion.prepare(self.board,self.side,self.source.GetPath(),self.folder.GetPath())
+            self.command.SetValue(result['command']);self.copy.Enable()
+            self.result.SetLabel(f"{result['strokes']} traits vers {result['layer']}. Copier le RUN puis l’exécuter dans Fusion.")
+        except Exception as error:
+            wx.MessageBox(str(error),'Préparation Fusion interrompue',wx.OK|wx.ICON_INFORMATION,parent=self)
+
+    def on_copy(self,event):
+        # Même interaction que la passerelle Fusion : aucun remplacement du
+        # presse-papiers pendant la préparation, copie sur ce clic uniquement.
+        text=self.command.GetValue()
+        if not text:return
+        if not wx.TheClipboard.Open():
+            wx.MessageBox('Presse-papiers occupé. Réessayez.',parent=self);return
+        try:
+            copied=wx.TheClipboard.SetData(wx.TextDataObject(text))
+            if copied:wx.TheClipboard.Flush()
+        finally:wx.TheClipboard.Close()
+        if not copied:wx.MessageBox('La commande n’a pas pu être copiée.',parent=self)
 
 
 class ViaDialog(wx.Dialog):
@@ -36,7 +100,7 @@ class ViaDialog(wx.Dialog):
         self.near=wx.CheckBox(self,label='Alléger les labels proches — moins de 3 mm'); self.near.SetValue(True)
         outer.Add(self.grid,0,wx.LEFT|wx.RIGHT|wx.BOTTOM,12)
         outer.Add(self.near,0,wx.LEFT|wx.RIGHT|wx.BOTTOM,12)
-        info=wx.StaticText(self,label='C2-1 : colonne C, ligne 2, accès 1. Top et Bottom ont deux listes séparées.\n'
+        info=wx.StaticText(self,label='C2.1 : colonne C, ligne 2, accès 1. Top et Bottom ont deux listes séparées.\n'
                            'Labels entourés d’un ovale, avec trait vers le via. Bottom est vu de dessous.\n'
                            'Seules les couches libres ou déjà gérées par Kicad_Via sont proposées.')
         info.Wrap(590); outer.Add(info,0,wx.EXPAND|wx.LEFT|wx.RIGHT|wx.BOTTOM,12)
@@ -44,14 +108,16 @@ class ViaDialog(wx.Dialog):
         buttons=wx.BoxSizer(wx.HORIZONTAL)
         self.generate=wx.Button(self,label='Générer / remplacer'); self.generate.SetDefault()
         self.merge=wx.Button(self,label='Fusionner vers F.SilkS')
+        self.export=wx.Button(self,label='Copier vers Fusion…')
         close=wx.Button(self,wx.ID_CANCEL,label='Fermer')
-        for button in (self.generate,self.merge,close): buttons.Add(button,0,wx.ALL,5)
+        for button in (self.generate,self.merge,self.export,close): buttons.Add(button,0,wx.ALL,5)
         outer.Add(buttons,0,wx.ALIGN_RIGHT|wx.ALL,6)
         self.SetSizer(outer); self.SetMinSize((660,-1)); self.Fit(); self.CentreOnParent()
         self.side.Bind(wx.EVT_RADIOBOX,self.change_side)
         self.layer.Bind(wx.EVT_CHOICE,self.refresh_actions)
         self.generate.Bind(wx.EVT_BUTTON,lambda e:self.finish('generate'))
         self.merge.Bind(wx.EVT_BUTTON,lambda e:self.finish('merge'))
+        self.export.Bind(wx.EVT_BUTTON,self.export_fusion)
         self.update_side()
 
     @property
@@ -83,8 +149,15 @@ class ViaDialog(wx.Dialog):
         self.generate.Enable(valid)
         preview=service.state(self.board)['faces'].get(self.selected_side,{}).get('preview',{})
         self.merge.Enable(bool(valid and preview and preview['layer']==self.layers[index]))
+        self.export.Enable(bool(service.state(self.board)['faces'].get(self.selected_side)))
         self.status.SetLabel('La couche sera renommée Kicad_Via_'+self.selected_side.upper()+'.' if valid
                              else 'Aucune couche disponible : libérez une couche utilisateur.')
+
+    def export_fusion(self,event):
+        folder=str(Path(self.output.GetPath()).parent) if self.output.GetPath() else str(Path.home())
+        dialog=FusionDialog(self,self.board,self.selected_side,folder)
+        try:dialog.ShowModal()
+        finally:dialog.Destroy()
 
     def finish(self,mode):
         try:

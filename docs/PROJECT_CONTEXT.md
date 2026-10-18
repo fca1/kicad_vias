@@ -19,7 +19,7 @@ couche Kicad_Via_TOP/BOTTOM, garder la possibilité d'ajustement manuel puis de
 fusion vers F.SilkS/B.SilkS. Préserver tout contenu étranger, routage et masque.
 Bouton avec icône via/drapeau dans le bandeau. Installer après chaque commit.
 
-Repères par cases de 20 mm : C2-1, colonne C, ligne 2, accès 1 ; A…Z puis AA…
+Repères par cases de 20 mm : C2.1, colonne C, ligne 2, accès 1 ; A…Z puis AA…
 Origine au coin inférieur gauche de l'enveloppe Edge.Cuts vue de la face choisie,
 X vers la droite, Y vers le haut ; Bottom inverse X. Ovale et trait de rappel ;
 placement évitant composants, ouvertures de masque et sérigraphie. À moins de
@@ -40,13 +40,33 @@ label, voisin, écarts et UUID de l'affichage. Ces données restent internes.
   les objets après réouverture ou sur un autre poste. Pas de simple adoption par nom.
 - `tools/install_plugin.py` : archive du commit, sauvegarde et vérification SHA-256.
 - `tools/adopt_previous.py` : migration bornée sur preuves de l'ancien repérage.
-- `tests/test_plugin.py` : 17 tests natifs, dont interface réelle wxPython.
+- `tests/test_plugin.py` : 23 tests natifs, dont interface réelle wxPython.
 
 KiCad audité : 10.0.7 sous Windows, Python natif avec wxPython 4.3.1 et Shapely
 2.2.0. Utiliser IPC au maximum pour lecture de la carte en mémoire et rechargement ;
 le renommage des couches a nécessité l'API native sur cette version.
 Une installation fraîche ne configure pas automatiquement le hook local Git.
 La portabilité vers d'autres versions et systèmes n'est pas vérifiée.
+
+## Évolution du 18 octobre 2026 — transfert graphique Fusion
+
+Demande explicite : remplacer le tiret par un point, ajouter le parcours RUN et
+presse-papiers du projet kicad_plugin_fusion2kicad, puis fusionner PR nº 1 vers
+main et réinstaller le commit fusionné. Implémentation autonome dans `fusion.py`,
+avec dialogue secondaire dans `action.py`. Les traits natifs de la police KiCad
+conservent positions, rotations et miroir ; les arcs sont discrétisés à 5 µm.
+BRD/FBRD choisi pour calculer X_fusion=X_KiCad-dx et Y_fusion=sy-Y_KiCad ; chaque
+origine composant est contrôlée. L'ULP vérifie composants, positions, angles,
+miroirs, empreintes et couche tPlace/bPlace avant de proposer une copie additive.
+Aucune application automatique à Fusion. Copier uniquement sur clic utilisateur.
+Exécution ULP dans Fusion non qualifiée à ce stade ; préparation et géométrie
+vérifiées sur copies. Voir [historique de la demande](HISTORY/2026-10-18_fusion_labels.md).
+
+Le parcours de référence a été lu dans le dépôt local `script_krt_fusion`, fichiers
+`plugin/passerelle_fusion/action.py`, `service.py` et
+`tools/kicad_routage_vers_fusion.py` le 18 octobre 2026 ; ce n'est pas une copie
+complète du convertisseur, ni une dépendance au plugin installé. Le dépôt public
+correspondant est https://github.com/fca1/kicad_plugin_fusion2kicad.
 
 ## Sources et couverture
 

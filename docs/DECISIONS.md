@@ -66,3 +66,36 @@ codex/kicad-via ; pas de fusion automatique vers main. Le tableau existant a
 du rendu et de l'arrondi réussi. Les 17 tests restent réussis.
 Le refus IPC « busy » venait de deux dialogues ouverts ; fermeture sans
 application puis rechargement RAS_OK. Aucun correctif de code pour ce refus.
+
+## 18 octobre 2026 — Noms courts et copie vers Fusion
+
+Demande et autorisation explicites : A3-1 devient A3.1 ; préparer le transfert
+des labels et dessins par RUN, avec copie presse-papiers, comme la passerelle
+fusion2kicad ; fusionner la PR nº 1 puis réinstaller depuis le commit fusionné.
+Le point remplace le tiret dans la géométrie, l'aide et le tableau nouvellement
+généré. Le moteur mesure la largeur native du texte pour ajuster aussi l'ovale.
+Les repères existants sont mis à jour par Générer / remplacer, pas au chargement.
+
+Exporter uniquement les objets UUID gérés de la face : aperçu prioritaire,
+sinon fusionné, avec leurs déplacements manuels. Vectoriser la police par
+GetEffectiveTextShape pour éviter les différences de métriques de police ; les
+textes Fusion ne sont donc pas éditables comme textes. Arcs discrétisés à 5 µm.
+Reprendre l'interaction de la passerelle (préparer, copier RUN, lancer dans Fusion)
+sans dépendance de code au convertisseur. Le BRD/FBRD sert à vérifier le repère
+des composants ; pas de déduction à partir des coordonnées arrondies du tableau.
+Contrôles d'implantation exécutés par l'ULP avant création du SCR et confirmation
+d'ajout. Transfert additif ; pas de suppression de sérigraphie cible. Un second
+lancement peut créer des doublons. Exécution dans Fusion non vérifiée.
+
+Diagnostic confirmé sur copie IPC : présence simultanée de l'ancien aperçu User.1
+et du repérage fusionné, dont la couche User.2 vide garde Kicad_Via_TOP. Le code
+ne libérait que la source de l'aperçu et refusait ce nom réservé ailleurs.
+Correction : rendre son nom précédent à la source fusionnée uniquement si son
+UUID de registre est connu, qu'elle est vide et garde le nom attendu. Les objets
+fusionnés restent présents ; rollback restaure aussi le nom si échec. Cas reproduit
+et couvert par test natif, en plus des refus de contenu étranger existants.
+
+Validation : 23 tests réussis ; préparation Top/Bottom et après fusion, miroir des
+traits, erreur d'arc, FBRD, refus de mauvais alignement, conservation de la carte,
+dialogue et copie sur clic. Copie réelle : 18 accès, 14 labels, 1 242 traits pour
+Fusion. Tous fichiers de validation et sorties de la carte restent dans .local.

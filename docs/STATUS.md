@@ -1,3 +1,26 @@
+# État — repères A3.1 et préparation Fusion — 18 octobre 2026
+
+Changements prêts sur codex/kicad-via : point à la place du tiret, bouton Copier
+vers Fusion, dialogue source BRD/FBRD et sortie, préparation ULP puis copie de
+RUN sur clic. Copie graphique Top/Bottom, labels vectorisés, ovales, rappels et
+grille, avec alignement source contrôlé. Aucun lancement automatique de Fusion.
+
+23 tests natifs réussis (3,358 s). Vérification sur copie IPC du PCB courant :
+18 accès, 14 labels et 1 242 traits ; repères C1.1, C1.2, C2.1… La correction
+de reprise aperçu ancien + source fusionnée vide est reproduite et couverte.
+Les métadonnées et tableaux de validation restent privés dans .local.
+
+En cours : commit et installation, mise à jour de la PR nº 1, fusion autorisée
+vers main puis installation du commit fusionné. La mémoire sera finalisée dans
+ce commit de fusion. Il reste à exécuter et contrôler le RUN dans Fusion ;
+aucune qualification d'application de cet ULP dans Fusion n'est revendiquée.
+Les anciens labels KiCad doivent être régénérés via le bouton pour devenir A3.1.
+
+Historique de demande : HISTORY/2026-10-18_fusion_labels.md. Couverture toujours
+partielle pour les échanges antérieurs ; export original du chat non fourni.
+
+## État précédent (historique)
+
 # État courant — 18 octobre 2026
 
 Branche `codex/kicad-via`, distant public `fca1/kicad_vias`. Le README initial

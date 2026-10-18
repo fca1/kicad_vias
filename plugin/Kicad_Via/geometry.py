@@ -130,7 +130,7 @@ def prepare(board,layer,opt,exclude=(),obstacles_only=False):
     for row in chosen: bins[row['case']].append(row)
     for key,rows in bins.items():
         for i,row in enumerate(sorted(rows,key=lambda r:(r['xx'],r['yy'],r['net'])),1):
-            row['label']=f'{key}-{i}'
+            row['label']=f'{key}.{i}'
     chosen.sort(key=lambda r:(int(r['xx']//20),int(r['yy']//20),r['xx'],r['yy'],r['net']))
     additions=[]; printed=[]; records=[]; protections=[]
 

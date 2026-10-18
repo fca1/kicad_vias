@@ -76,7 +76,7 @@ class PluginTests(unittest.TestCase):
         self.generate('Top',p.User_1); self.generate('Bottom',p.User_2)
         data=service.state(self.b)['faces']
         for side in ('Top','Bottom'):
-            self.assertTrue(all(r['repere'].endswith('-1') for r in data[side]['preview']['rows']))
+            self.assertTrue(all(r['repere'].endswith('.1') for r in data[side]['preview']['rows']))
             self.assertTrue((self.root/(side+'.nd')).read_text(encoding='utf-8').startswith('<!-- Kicad_Via v1 '+side))
         bottom=[it for it in service.layer_objects(self.b,p.User_2) if isinstance(it,p.PCB_TEXT)]
         self.assertTrue(all(it.IsMirrored() for it in bottom))
@@ -187,6 +187,18 @@ class PluginTests(unittest.TestCase):
         self.generate(layer=p.User_2)
         self.assertEqual(self.b.GetLayerName(p.User_2),'Kicad_Via_TOP')
         self.assertTrue(merged.issubset({uid(i) for i in self.b.GetDrawings()}))
+
+    def test_adopted_preview_and_empty_merged_source(self):
+        self.generate(layer=p.User_2);service.merge(self.b,p.User_2,'Top')
+        merged=service.state(self.b)['faces']['Top']['merged']
+        item=line(self.b,(5,5),(6,5),p.User_1);self.b.Add(item)
+        group=p.PCB_GROUP(self.b);group.AddItem(item);self.b.Add(group)
+        legacy=dict(layer=p.User_1,ids=[uid(item)],group=uid(group),previous_name='User.1')
+        service.persist('Top','preview',legacy)
+        self.generate(layer=p.User_1)
+        self.assertEqual(self.b.GetLayerName(p.User_1),'Kicad_Via_TOP')
+        self.assertEqual(self.b.GetLayerName(p.User_2),'User.2')
+        self.assertTrue(set(merged['ids']).issubset({uid(i) for i in self.b.GetDrawings()}))
 
 
 if __name__=='__main__': unittest.main(verbosity=2)
