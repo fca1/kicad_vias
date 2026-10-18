@@ -29,3 +29,10 @@ avec preuve JSON, copie antérieure, liste des UUID, géométries et groupe exac
 Seul le registre est initialisé ; aucune modification de la carte à l'adoption.
 Ne pas confondre cette migration spécifique avec une adoption générale de
 n'importe quel texte trouvé sur une couche.
+
+Installation initiale b8cce99 depuis archive, bouton observé dans le bandeau.
+Cas de reprise supplémentaire reproduit : après fusion, une couche vide gardait
+le nom Kicad_Via_TOP et empêchait d'en choisir une autre. Correction limitée à
+une ancienne couche source connue du registre et restée vide ; nom rendu puis
+réservé sur la nouvelle couche. Sérigraphie fusionnée conservée jusqu'à la
+fusion suivante. Test natif de ce cas réussi. Dernière suite : 17 tests.

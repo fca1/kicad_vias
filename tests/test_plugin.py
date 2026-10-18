@@ -164,5 +164,29 @@ class PluginTests(unittest.TestCase):
         self.assertIn('preview',state);self.assertNotIn('merged',state)
         service.validate_record(self.b,state['preview'],True)
 
+    def test_dialog_top_bottom_options(self):
+        import wx
+        from Kicad_Via.action import ViaDialog
+        app=wx.GetApp() or wx.App(False)
+        dialog=ViaDialog(None,self.b)
+        try:
+            self.assertEqual(dialog.size.GetValue(),.65)
+            self.assertTrue(dialog.output.GetPath().endswith('_top.nd'))
+            self.assertIn('F.SilkS',dialog.merge.GetLabel())
+            dialog.side.SetSelection(1);dialog.update_side()
+            self.assertTrue(dialog.output.GetPath().endswith('_bottom.nd'))
+            self.assertIn('B.SilkS',dialog.merge.GetLabel())
+            self.assertTrue(dialog.grid.GetValue());self.assertTrue(dialog.near.GetValue())
+            self.assertFalse(dialog.merge.IsEnabled())
+            self.assertLessEqual(dialog.GetSize().height,500)
+        finally: dialog.Destroy()
+
+    def test_change_layer_after_merge(self):
+        self.generate();service.merge(self.b,p.User_1,'Top')
+        merged=set(service.state(self.b)['faces']['Top']['merged']['ids'])
+        self.generate(layer=p.User_2)
+        self.assertEqual(self.b.GetLayerName(p.User_2),'Kicad_Via_TOP')
+        self.assertTrue(merged.issubset({uid(i) for i in self.b.GetDrawings()}))
+
 
 if __name__=='__main__': unittest.main(verbosity=2)

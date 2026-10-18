@@ -172,7 +172,12 @@ def generate(board,layer,opt,path):
         raise ValueError('Aucun via découvert et accessible sur cette face. Carte et fichier inchangés.')
     output,staged=stage_output(path,opt.side,plan['rows'],plan['bounds'])
     name='Kicad_Via_'+opt.side.upper()
-    old_layer=previous['layer'] if previous else None
+    merged=face.get('merged',{})
+    old_layer=previous['layer'] if previous else merged.get('source_layer')
+    if not previous and old_layer is not None and layer_objects(board,old_layer):
+        # Le nom ne suffit pas : ne pas récupérer une ancienne couche qui a
+        # reçu entre-temps du contenu étranger après la fusion.
+        old_layer=None
     if any(l not in (layer,old_layer) and board.GetLayerName(l)==name for l in USER_LAYERS):
         staged.unlink(missing_ok=True)
         raise ValueError('Ce nom de couche est déjà utilisé ailleurs : '+name)
@@ -183,14 +188,15 @@ def generate(board,layer,opt,path):
         # Renommer n'est pas proposé par IPC dans KiCad 10.0.7 : API native.
         layers=board.GetEnabledLayers(); layers.AddLayer(layer); board.SetEnabledLayers(layers)
         if previous: removed=remove_record(board,previous)
-        if previous and old_layer!=layer:
-            board.SetLayerName(old_layer,previous['previous_name'])
+        if old_layer is not None and old_layer!=layer:
+            board.SetLayerName(old_layer,(previous or merged)['previous_name'])
         if not board.SetLayerName(layer,name): raise ValueError('KiCad refuse le nom de couche.')
         for it in plan['items']: board.Add(it); added.append(it)
         group=p.PCB_GROUP(board); group.SetName(name)
         for it in added: group.AddItem(it)
         board.Add(group)
         face['preview']=dict(layer=layer,ids=[uid(it) for it in added],group=uid(group),
+                             source_layer=layer,
                              rows=plan['rows'],bounds=plan['bounds'],output=str(output),
                              previous_name=previous.get('previous_name',old_name) if previous and previous['layer']==layer else old_name)
         shown=board.GetVisibleLayers(); shown.AddLayer(layer); board.SetVisibleLayers(shown)
@@ -236,7 +242,7 @@ def merge(board,layer,side):
     try:
         if old_final: removed=remove_record(board,old_final)
         for it in items: it.SetLayer(target)
-        face['merged']=dict(record,layer=target)
+        face['merged']=dict(record,layer=target,source_layer=record['layer'])
         del face['preview']; persist(side,'merged',face['merged'])
     except BaseException:
         for it in items: it.SetLayer(layer)

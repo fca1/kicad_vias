@@ -11,6 +11,7 @@ manifeste SHA-256 et ne jamais installer des fichiers de travail non committés.
 Ne pas redémarrer KiCad ni enregistrer une carte utilisateur automatiquement.
 
 Ne jamais effacer le contenu étranger d'une couche. Les seuls objets remplaçables
-sont ceux dont les UUID sont enregistrés dans les propriétés Kicad_Via de la carte.
+sont ceux dont les UUID sont enregistrés dans le registre local Kicad_Via,
+avec concordance des objets et des membres du groupe sur la carte.
 Les listes Top et Bottom ont des numérotations indépendantes.
 Mettre à jour docs/STATUS.md et docs/DECISIONS.md à la fin d'une tâche.
