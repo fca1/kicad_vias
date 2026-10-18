@@ -7,7 +7,7 @@ import unittest
 from unittest.mock import patch
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'plugin'))
 import pcbnew as p
-from Kicad_Via.model import Options,column,cell,coordinates
+from Kicad_Via.model import Options,column,cell,coordinates,number_unprinted
 from Kicad_Via.geometry import vec,uid,line,prepare
 from Kicad_Via import service
 
@@ -78,7 +78,8 @@ class PluginTests(unittest.TestCase):
         for side in ('Top','Bottom'):
             self.assertTrue(all(r['repere'].endswith('.1') for r in data[side]['preview']['rows']))
             text=(self.root/(side+'.nd')).read_text(encoding='utf-8')
-            self.assertTrue(text.startswith('# '+side+'\n\n| Repère | Net | X (mm) | Y (mm) |\n'))
+            self.assertTrue(text.startswith('# '+side+'\n\n| Repère | Net | Label imprimé | X (mm) | Y (mm) |\n'))
+            self.assertIn('| true |',text)
             self.assertNotIn('Case',text)
             self.assertRegex(text,r'\| -?\d+\.\d \| -?\d+\.\d \|')
         bottom=[it for it in service.layer_objects(self.b,p.User_2) if isinstance(it,p.PCB_TEXT)]
@@ -130,6 +131,66 @@ class PluginTests(unittest.TestCase):
         self.assertTrue(all(r['rappel'] for r in plan['rows'] if r['imprime']))
         self.assertFalse(service.layer_objects(self.b,p.User_1))
 
+    def test_center_leaders_survive_save_and_merge(self):
+        for side,layer in [('Top',p.User_1),('Bottom',p.User_2)]:
+            self.generate(side,layer)
+            record=service.state(self.b)['faces'][side]['preview']
+            self.assertTrue(record['leader_vias'])
+            for row in record['rows']:
+                if row['imprime']:
+                    self.assertEqual(tuple(row['rappel'][0]),(row['kicad_x_mm'],row['kicad_y_mm']))
+        path=self.root/'center.kicad_pcb';p.SaveBoard(str(path),self.b)
+        board=p.LoadBoard(str(path))
+        service.merge(board,p.User_1,'Top');service.merge(board,p.User_2,'Bottom')
+
+    def test_center_exception_keeps_other_apertures_protected(self):
+        for obstacle in ('other_via','overlapping_mask'):
+            with self.subTest(obstacle=obstacle):
+                self.b=sample();self.generate()
+                record=service.state(self.b)['faces']['Top']['preview']
+                leader_id,via_id=next(iter(record['leader_vias'].items()))
+                objects={uid(it):it for it in service.all_objects(self.b)}
+                leader=objects[leader_id];via=objects[via_id]
+                if obstacle=='other_via':
+                    other=next(v for v in self.b.GetTracks() if isinstance(v,p.PCB_VIA)
+                               and uid(v)!=via_id and not v.IsTented(p.F_Mask))
+                    leader.SetEnd(other.GetPosition())
+                else:
+                    # Un obstacle superposé au via ne doit pas disparaître
+                    # avec l'exception accordée à sa seule ouverture propre.
+                    pos=via.GetPosition()
+                    mask=p.PCB_SHAPE(self.b);mask.SetShape(p.SHAPE_T_RECT);mask.SetLayer(p.F_Mask)
+                    mask.SetStart(p.VECTOR2I(pos.x-p.FromMM(.1),pos.y-p.FromMM(.1)))
+                    mask.SetEnd(p.VECTOR2I(pos.x+p.FromMM(.1),pos.y+p.FromMM(.1)));self.b.Add(mask)
+                with self.assertRaisesRegex(ValueError,'chevauche'):
+                    service.merge(self.b,p.User_1,'Top')
+
+    def test_center_margin_relaxed_without_removing_silkscreen(self):
+        from shapely.geometry import Point,LineString,box
+        from Kicad_Via.geometry import leader_obstacles
+        actual=box(-1,.25,1,.4);fixed=actual.buffer(.2)
+        apertures={'own':Point(0,0).buffer(.6)}
+        departure=LineString([(0,0),(0,-2)]).buffer(.08)
+        self.assertTrue(fixed.intersects(departure))
+        allowed=leader_obstacles(fixed,apertures,'own',actual)
+        self.assertFalse(allowed.intersects(departure))
+        self.assertTrue(allowed.intersects(LineString([(0,0),(0,2)]).buffer(.08)))
+
+    def test_ghost_names_follow_anchor_and_distance(self):
+        def row(name,x,y,printed):
+            return dict(repere=name,case=name.split('.')[0],kicad_x_mm=x,kicad_y_mm=y,imprime=printed,via_uuid=name,net=name)
+        # Le fantôme plus loin vient initialement avant le proche dans la case.
+        rows=[row('A3.1',10,10,True),row('A3.2',10,12,False),
+              row('A3.3',11,10,False),row('A3.4',18,10,True),row('A3.5',18.2,10,False),
+              row('B3.1',18.3,10,True),row('C3.1',18.4,10,False)]
+        result=number_unprinted(rows)
+        self.assertEqual([r['repere'] for r in result],['A3.1','A3.2','A3.3','A3.4','A3.5','B3.1','C3.1'])
+        self.assertEqual(result[1]['via_uuid'],'A3.3')
+        self.assertEqual(result[2]['via_uuid'],'A3.2')
+        self.assertEqual(result[4]['voisin'],'A3.4')
+        self.assertEqual(result[-1]['voisin'],'B3.1')
+        self.assertEqual([r['imprime'] for r in result],[True,False,False,True,False,True,False])
+
     def test_proximity_and_independent_cell_suffixes(self):
         net=p.NETINFO_ITEM(self.b,'NEAR_N3');self.b.Add(net)
         v=p.PCB_VIA(self.b);v.SetPosition(vec(65,56));v.SetWidth(p.FromMM(.8));v.SetDrill(p.FromMM(.3))
@@ -159,6 +220,9 @@ class PluginTests(unittest.TestCase):
         self.assertIsNone(rows['N3']['label_xy'])
         self.assertEqual(rows['N3']['rappel'],[])
         self.assertEqual(rows['N3']['voisin'],rows['NEAR_N3']['repere'])
+        output,staged=service.stage_output(self.root/'fallback.nd','Top',plan['rows'],plan['bounds'])
+        text=staged.read_text(encoding='utf-8');staged.unlink()
+        self.assertIn('| true |',text);self.assertIn('| false |',text)
         with self.assertRaisesRegex(ValueError,'Aucune place lisible'):
             prepare(self.b,p.User_1,Options(omit_nearby=False))
         # Sans voisin imprimé dans le rayon autorisé, ne pas masquer en silence.

@@ -18,7 +18,10 @@ Cliquer sur le bouton **Kicad_Via** et choisir :
 
 **Générer / remplacer** retient un seul via découvert et accessible par net,
 en privilégiant les accès dégagés. Le label est dans un ovale, avec un trait
-vers son via. Le plugin cherche d'abord une place libre pour chaque label,
+jusqu'au **centre du via**, même si ce centre est découvert de vernis. Les autres
+vias, pastilles, composants et inscriptions restent protégés. Seule la marge
+supplémentaire des obstacles fixes est relâchée au voisinage immédiat du centre ;
+leurs contours réels restent contrôlés. Le plugin cherche d'abord une place libre pour chaque label,
 y compris si son via est proche d'un autre. Il essaie les positions déportées
 entre 1,5 et 10 mm et un rappel direct ou avec un coude, sans collision.
 Si tous ces placements échouent, l'option **Masquer en dernier recours** permet
@@ -36,7 +39,15 @@ par le plugin sont remplacées lors d'une nouvelle fusion de la même face.
 ## Convention
 
 **C2.1** = colonne C, ligne 2, premier accès de la case de 20 × 20 mm.
-Le suffixe suit les positions dans la case, pas l'ordre alphabétique des nets.
+Dans chaque case, les groupes de labels visibles suivent leur ordre spatial.
+Chaque visible est suivi de ses vias sans label, du plus proche au plus éloigné
+de son via : **E2.1 affiché, E2.2 masqué, E2.3 masqué, E2.4 affiché**, etc.
+Les fantômes sont rattachés au visible le plus proche de leur case ; une seule
+suite de numéros est partagée, sans sous-numéros. Le tableau suit ce même ordre.
+Les distances sont mesurées entre centres de vias, avant arrondi, et non depuis
+la position déportée de l'ovale. Si toute une case est masquée près d'une frontière,
+le voisin visible peut être dans la case adjacente ; le préfixe géographique réel
+est conservé et ses fantômes sont ordonnés par référence puis par distance.
 Les colonnes continuent après Z : AA, AB…
 
 La grille est vue de la face sélectionnée : X à droite, Y vers le haut ;
@@ -45,7 +56,8 @@ Pour Bottom, X est inversé et les textes sont miroités dans le fichier KiCad
 afin d'être lisibles depuis le dessous. Un repère C2.1 peut exister sur chaque
 face : son tableau Top ou Bottom l'identifie sans ambiguïté.
 
-Le tableau comporte quatre colonnes : **Repère, Net, X (mm), Y (mm)**.
+Le tableau comporte cinq colonnes : **Repère, Net, Label imprimé, X (mm), Y (mm)**.
+**Label imprimé** vaut `true` si le repère est dessiné, `false` sinon.
 Les coordonnées de la vue choisie sont arrondies au dixième de millimètre.
 Seul **Top** ou **Bottom** figure au-dessus du tableau, sans autre commentaire.
 La case se lit dans le repère (A3.1 = case A3) ; les données techniques restent internes.

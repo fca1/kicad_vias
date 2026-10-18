@@ -147,3 +147,38 @@ pour RunAction sur le canal courant ; ne pas confondre installation vérifiée e
 rechargement en mémoire. Laisser à l'utilisateur le rechargement depuis KiCad,
 sans redémarrer ni enregistrer la carte. La mise à jour documentaire finale
 reste elle aussi soumise à l'installation automatique depuis son commit.
+
+## 18 octobre 2026 — Rappel au centre et liste des fantômes
+
+Le trait doit atteindre le centre même si le vernis est ouvert. L'ancien retrait
+radial et le contrôle de masque expliquaient son arrêt avant le via. Désormais,
+les traits reçoivent une association UUID vers leur via dans le registre. Leur
+ouverture est exemptée à la génération et à la fusion ; les autres vias restent
+protégés. Au centre, relâcher les marges des obstacles fixes en conservant leurs
+contours réels. Preuve : un texte voisin bloquait la marge du départ sans contact
+physique ; test ajouté. Une pastille/inscription superposée ne doit jamais être
+retirée avec l'exception. Anciennes entrées du registre sans association compatibles.
+
+L'utilisateur demande aussi Label imprimé booléen. Ajouter true/false, garder X/Y
+à 0,1 mm et le titre seul. Reconnaître l'ancien tableau à quatre colonnes pour
+permettre sa mise à jour ; la séparation des faces reste contrôlée.
+
+Clarification utilisateur : il refuse la proposition E2.1.1. Dans chaque case,
+E2.1 visible est suivi de E2.2 et E2.3 fantômes par distance croissante au via
+portant E2.1, puis d'un prochain visible (E2.4). Garder une seule suite par case.
+Rattacher les fantômes au visible le plus proche de leur case ; maintenir l'ordre
+spatial des groupes visibles, trier les fantômes par distance précise. Réserver
+l'encombrement des suffixes avant placement pour que le renommage n'élargisse pas
+un texte au-delà de son ovale ; synchroniser les textes dessinés et le tableau.
+Si une case ne possède aucun visible, conserver le repli vers un visible adjacent,
+le préfixe de case réel et l'ordre par référence/distance. Ce cas existe sur la
+copie réelle : interdire ce repli ferait échouer toute la génération.
+
+28 tests natifs passent : centres Top/Bottom après sauvegarde/fusion, protection
+des autres ouvertures et obstacles superposés, assouplissement local sans collision
+réelle, numérotation où ordre spatial et distance diffèrent, cases adjacentes,
+true/false dans le tableau. Validation finale sur copie IPC antérieure : centres,
+numéros dessinés et tableau, ordre des fantômes et fusion vérifiés. Les sorties
+et données de carte restent privées dans .local. Le rechargement à chaud dépend
+encore du canal IPC actuellement détenu par le gestionnaire ; ne pas le déclarer
+réussi sans réponse RAS_OK.

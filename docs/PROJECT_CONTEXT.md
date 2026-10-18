@@ -36,7 +36,7 @@ label, voisin, écarts et UUID de l'affichage. Ces données restent internes.
 
 Dernière correction du 18 octobre 2026 : supprimer Case, passer les coordonnées
 au dixième de millimètre et ne garder que Top ou Bottom comme titre. Le tableau
-final comporte Repère, Net, X (mm), Y (mm), sans commentaire ni marqueur technique.
+comportait alors Repère, Net, X (mm), Y (mm), sans commentaire ni marqueur technique.
 Reconnaître l'ancien format pour le remplacer, tout en refusant l'autre face et
 les fichiers étrangers. Les coordonnées précises restent dans le registre.
 
@@ -49,7 +49,7 @@ les fichiers étrangers. Les coordonnées précises restent dans le registre.
   les objets après réouverture ou sur un autre poste. Pas de simple adoption par nom.
 - `tools/install_plugin.py` : archive du commit, sauvegarde et vérification SHA-256.
 - `tools/adopt_previous.py` : migration bornée sur preuves de l'ancien repérage.
-- `tests/test_plugin.py` : 24 tests natifs, dont interface réelle wxPython.
+- `tests/test_plugin.py` : 28 tests natifs, dont interface réelle wxPython.
 
 KiCad audité : 10.0.7 sous Windows, Python natif avec wxPython 4.3.1 et Shapely
 2.2.0. Utiliser IPC au maximum pour lecture de la carte en mémoire et rechargement ;
@@ -88,11 +88,43 @@ Le choix d'un seul via par net reste identique ; cette correction ne crée pas
 un repère supplémentaire sur chaque via du même net. La recherche reste bornée
 aux placements existants (1,5–10 mm, angles de 15°, rappel direct ou à un coude).
 
-24 tests natifs passent, dont deux accès proches tous deux imprimés quand la place
+28 tests natifs passent, dont deux accès proches tous deux imprimés quand la place
 existe, et repli sans placement possible (option, rayon et voisin imprimé requis).
 Sur copie récente : 18 accès, 14 puis 16 labels ; E2.2 et F2.4 rétablis. Génération
 et fusion sur copie vérifiées ; la carte originale n'est pas modifiée par ces essais.
 Historique : [diagnostic et autorisation](HISTORY/2026-10-18_diagnostic_labels_proches.md).
+
+## Évolution du 18 octobre 2026 — trait centré et numéros des fantômes
+
+Demande utilisateur : prolonger le rappel jusqu'au centre du via, y compris dans
+son ouverture de masque. Causes de l'ancien arrêt confirmées dans le code :
+retrait radial explicite et obstacle de masque appliqué aussi à la fusion.
+Le plan associe maintenant chaque segment de rappel au UUID du via désigné,
+conservé dans `leader_vias` du registre. Génération et fusion utilisent la même
+exception locale. Les obstacles fixes réels sont réintroduits après assouplissement
+de leurs marges au centre : ne pas supprimer une pastille ou une inscription
+superposée en soustrayant naïvement un disque à l'union globale. La copie réelle
+a révélé un texte assez proche pour bloquer sa marge sans contact physique ;
+ce cas est testé. Les anciens registres sans `leader_vias` restent lisibles.
+
+Autre demande : colonne booléenne Label imprimé et numéros des fantômes par
+distance. Clarification explicite de l'utilisateur : E2.1 visible, puis E2.2,
+E2.3 non visibles, puis nouveau visible E2.4, dans la même case. Pas de E2.1.1.
+Modèle `number_unprinted` : groupes visibles dans leur ordre spatial, rattachement
+des fantômes au visible le plus proche de leur case, puis tri par distance entre
+centres précis ; une seule suite entière par case. Le tableau est regroupé de
+la même façon et ajoute true/false. Les noms dessinés sont mis à jour après ce
+classement, avec ovales dimensionnés pour tous les suffixes possibles de la case.
+Cas limite sans aucun visible dans une case : garder le préfixe de cette case,
+prendre la référence visible la plus proche à l'extérieur et trier ses fantômes
+par référence puis distance. Ce repli existant évite de refuser toute la génération
+au bord des cases. Ni choix de via par net ni positions des accès ne sont modifiés.
+
+28 tests réussis et validation sur la copie IPC antérieure de la carte : centres,
+texte dessiné et tableau cohérents, ordre et booléens, sauvegarde puis fusion.
+Aucun enregistrement automatique de l'original. Pour actualiser les repères déjà
+créés, utiliser Générer / remplacer après rechargement du plugin.
+Source : [échange et clarification](HISTORY/2026-10-18_centres_et_fantomes.md).
 
 ## Sources et couverture
 

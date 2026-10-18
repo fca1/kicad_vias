@@ -9,7 +9,7 @@ import pcbnew as p
 from shapely.geometry import Point,Polygon,LineString,box
 from shapely.ops import unary_union,nearest_points
 from shapely.affinity import translate
-from .model import coordinates,cell,column
+from .model import coordinates,cell,column,number_unprinted
 
 
 def mm(n): return p.ToMM(n)
@@ -73,6 +73,17 @@ def capsule(board,region,layer):
     return result
 
 
+def leader_obstacles(fixed,via_apertures,via_id,solid):
+    """Exempter seulement l'ouverture du via désigné, jamais ses voisins.
+
+    Près du centre, relâcher aussi les marges ajoutées aux obstacles fixes,
+    mais réintroduire leurs contours réels : aucune pastille ni inscription
+    superposée ne doit disparaître avec l'exception du via.
+    """
+    local=via_apertures[via_id]
+    return unary_union([fixed.difference(local),solid]+[g for key,g in via_apertures.items() if key!=via_id])
+
+
 def prepare(board,layer,opt,exclude=(),obstacles_only=False):
     exclude=set(exclude)
     copper=p.F_Cu if opt.side=='Top' else p.B_Cu
@@ -98,18 +109,21 @@ def prepare(board,layer,opt,exclude=(),obstacles_only=False):
             if it.GetLayer()==silk_layer and (not hasattr(it,'IsVisible') or it.IsVisible()):
                 silk.append(silhouette(it,silk_layer))
     vias=[it for it in board.GetTracks() if isinstance(it,p.PCB_VIA)]
+    via_apertures={}
     for v in vias:
         if v.IsOnLayer(copper) and not v.IsTented(mask):
             pos=v.GetPosition(); r=mm(v.GetWidth(copper))/2+mm(v.GetSolderMaskExpansion())
-            apertures.append(Point(mm(pos.x),mm(pos.y)).buffer(r))
+            via_apertures[uid(v)]=Point(mm(pos.x),mm(pos.y)).buffer(r).buffer(.2)
     for it in board.GetDrawings():
         if uid(it) in exclude: continue
         if it.GetLayer()==silk_layer: silk.append(silhouette(it,silk_layer))
         elif it.GetLayer()==mask: apertures.append(bounds(it))
     body_union=unary_union(bodies)
-    occupied=unary_union(bodies+[g.buffer(.2) for g in apertures]+[g.buffer(.2) for g in silk])
+    fixed=unary_union(bodies+[g.buffer(.2) for g in apertures]+[g.buffer(.2) for g in silk])
+    solid=unary_union(bodies+apertures+silk)
+    occupied=unary_union([fixed]+list(via_apertures.values()))
     if obstacles_only:
-        return dict(occupied=occupied,safe=safe)
+        return dict(occupied=occupied,safe=safe,fixed=fixed,solid=solid,via_apertures=via_apertures)
     bynet=defaultdict(list)
     for v in vias:
         if not v.GetNetname() or not v.IsOnLayer(copper) or v.IsTented(mask): continue
@@ -132,7 +146,14 @@ def prepare(board,layer,opt,exclude=(),obstacles_only=False):
         for i,row in enumerate(sorted(rows,key=lambda r:(r['xx'],r['yy'],r['net'])),1):
             row['label']=f'{key}.{i}'
     chosen.sort(key=lambda r:(int(r['xx']//20),int(r['yy']//20),r['xx'],r['yy'],r['net']))
-    additions=[]; printed=[]; records=[]; protections=[]
+    additions=[]; printed=[]; records=[]; protections=[]; leader_vias={}; label_items={}
+    # Réserver la taille de tous les numéros possibles de la case : les visibles
+    # peuvent changer de suffixe après regroupement de leurs voisins masqués.
+    dimensions={}
+    for case,members in bins.items():
+        sizes=[bounds(text_item(board,case+'.'+str(i),0,0,opt.label_size,layer,opt.side)).bounds
+               for i in range(1,len(members)+1)]
+        dimensions[case]=(max(b[2]-b[0] for b in sizes),max(b[3]-b[1] for b in sizes))
 
     def free(g):
         return safe.covers(g) and not occupied.intersects(g)
@@ -141,10 +162,10 @@ def prepare(board,layer,opt,exclude=(),obstacles_only=False):
         x,y=row['x'],row['y']; label=row['label']
         neighbor=None
         pos=None; leader_path=[]
-        sample=text_item(board,label,0,0,opt.label_size,layer,opt.side)
-        tb=bounds(sample); x0,y0,x1,y1=tb.bounds
-        half_height=(y1-y0)/2+.2
-        half_width=max((x1-x0)/2+.25,half_height+.1)
+        route_occupied=unary_union([leader_obstacles(fixed,via_apertures,uid(row['via']),solid)]+protections)
+        width,height=dimensions[row['case']]
+        half_height=height/2+.2
+        half_width=max(width/2+.25,half_height+.1)
         core=LineString([(-half_width+half_height,0),(half_width-half_height,0)])
         oval=core.buffer(half_height,quad_segs=20)
         # Le trait de rappel est obligatoire. On peut décaler le drapeau,
@@ -156,18 +177,23 @@ def prepare(board,layer,opt,exclude=(),obstacles_only=False):
                 if not free(shape.buffer(.15)): continue
                 end=nearest_points(Point(x,y),shape.boundary)[1]
                 d=math.hypot(end.x-x,end.y-y)
-                start_radius=row['radius']+max(0,mm(row['via'].GetSolderMaskExpansion()))+.32
-                if d<=start_radius+.15: continue
-                start=(x+(end.x-x)*start_radius/d,y+(end.y-y)*start_radius/d)
+                min_label_distance=row['radius']+max(0,mm(row['via'].GetSolderMaskExpansion()))+.32
+                if d<=min_label_distance+.15: continue
+                start=(x,y)
                 routes=[ [start,(end.x,end.y)],
                          [start,(start[0],end.y),(end.x,end.y)],
                          [start,(end.x,start[1]),(end.x,end.y)] ]
-                path=next((r for r in routes if free(LineString(r).buffer(.08))),None)
+                path=next((r for r in routes if safe.covers(LineString(r).buffer(.08))
+                           and not route_occupied.intersects(LineString(r).buffer(.08))),None)
                 if path is None: continue
                 pos=(tx,ty); leader_path=path
-                additions.append(text_item(board,label,tx,ty,opt.label_size,layer,opt.side))
+                label_items[uid(row['via'])]=text_item(board,label,tx,ty,opt.label_size,layer,opt.side)
+                additions.append(label_items[uid(row['via'])])
                 additions.extend(capsule(board,shape,layer))
-                additions.extend(line(board,a,b,layer) for a,b in zip(path,path[1:]) if a!=b)
+                for a,b in zip(path,path[1:]):
+                    if a==b: continue
+                    leader=line(board,a,b,layer);additions.append(leader)
+                    leader_vias[uid(leader)]=uid(row['via'])
                 protected=unary_union([shape.buffer(.2),LineString(path).buffer(.18)])
                 occupied=unary_union([occupied,protected]); protections.append(protected)
                 printed.append(row)
@@ -225,5 +251,8 @@ def prepare(board,layer,opt,exclude=(),obstacles_only=False):
                 x=xmin+.5+n*2
                 g=LineString([(x,y),(x+.6,y)]).buffer(.14)
                 if free(g): additions.append(line(board,(x,y),(x+.6,y),layer))
-    return dict(items=additions,rows=records,bounds=list(ext),side=opt.side,
+    numbered=number_unprinted(records)
+    for record in numbered:
+        if record['imprime']:label_items[record['via_uuid']].SetText(record['repere'])
+    return dict(items=additions,rows=numbered,bounds=list(ext),side=opt.side,leader_vias=leader_vias,
                 count_vias=len(vias),printed=len(printed),protections=protections)

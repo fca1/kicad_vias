@@ -5,11 +5,13 @@ reprendre le projet ; les échanges disponibles et leurs limites sont dans `docs
 Rédiger la documentation et les commentaires en français.
 
 L'utilisateur a autorisé le plugin Top/Bottom, ses drapeaux, son tableau et sa
-simplification finale à Repère, Net, X/Y au dixième de mm, titre Top/Bottom seul. Le 18 octobre 2026, il
+tableau Repère, Net, Label imprimé booléen, X/Y au dixième de mm, titre Top/Bottom seul. Le 18 octobre 2026, il
 ajoute les noms A3.1, l'export graphique ULP/RUN avec copie presse-papiers sur
 clic et autorise la fusion de la PR nº 1 vers main avec réinstallation exacte.
 L'utilisateur autorise ensuite la recherche de placement avant tout masquage
 de proximité, avec commit, push main et réinstallation (18 octobre 2026).
+Il demande également le rappel jusqu'au centre du via et une seule suite par
+case : visible E2.1, fantômes E2.2/E2.3 par distance, puis prochain visible E2.4.
 Avant toute nouvelle création, modification ou suppression de code, tests, scripts ou configuration
 exécutable, décrire les changements envisagés et obtenir l'accord explicite
 préalable de l'utilisateur. Une demande d'analyse ou de documentation ne donne

@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 import tempfile
 import pcbnew as p
-from .geometry import prepare,uid,polygons,bounds
+from .geometry import prepare,uid,polygons,bounds,leader_obstacles
 from .model import Options
 
 USER_LAYERS=[getattr(p,'User_'+str(i)) for i in range(1,46) if hasattr(p,'User_'+str(i))]
@@ -120,8 +120,10 @@ def stage_output(path,side,rows,ext):
     face : une liste Bottom ne remplace jamais une liste Top par mégarde.
     """
     path=Path(path).expanduser().resolve()
-    header=[f'# {side}','','| Repère | Net | X (mm) | Y (mm) |',
-            '| --- | --- | ---: | ---: |']
+    header=[f'# {side}','','| Repère | Net | Label imprimé | X (mm) | Y (mm) |',
+            '| --- | --- | --- | ---: | ---: |']
+    previous_header=[f'# {side}','','| Repère | Net | X (mm) | Y (mm) |',
+                     '| --- | --- | ---: | ---: |']
     if path.suffix.lower() not in ('.nd','.md'):
         raise ValueError('Le tableau doit avoir une extension .nd ou .md.')
     if path.exists():
@@ -129,6 +131,7 @@ def stage_output(path,side,rows,ext):
         # Reconnaître aussi l'ancien format pour permettre sa simplification,
         # tout en gardant la séparation des faces et le refus des autres fichiers.
         if not (text.startswith(f'<!-- Kicad_Via v1 {side} -->')
+                or text.startswith('\n'.join(previous_header)+'\n')
                 or text.startswith('\n'.join(header)+'\n')):
             raise ValueError('Ce fichier ne contient pas un tableau Kicad_Via de cette face. Choisissez un autre nom.')
     if not path.parent.is_dir(): raise ValueError('Le dossier de sortie doit exister.')
@@ -138,7 +141,7 @@ def stage_output(path,side,rows,ext):
     for r in rows:
         # Le tableau sert au repérage visuel ; les valeurs précises et UUID
         # restent dans le registre interne pour les reprises du plugin.
-        values=[r['repere'],r['net'],f"{r['x_mm']:.1f}",f"{r['y_mm']:.1f}"]
+        values=[r['repere'],r['net'],'true' if r['imprime'] else 'false',f"{r['x_mm']:.1f}",f"{r['y_mm']:.1f}"]
         lines.append('| '+' | '.join(escape(v) for v in values)+' |')
     fd,name=tempfile.mkstemp(prefix='.kicad_via_',suffix='.tmp',dir=path.parent)
     with os.fdopen(fd,'w',encoding='utf-8',newline='\n') as f: f.write('\n'.join(lines)+'\n')
@@ -207,6 +210,7 @@ def generate(board,layer,opt,path):
         face['preview']=dict(layer=layer,ids=[uid(it) for it in added],group=uid(group),
                              source_layer=layer,
                              rows=plan['rows'],bounds=plan['bounds'],output=str(output),
+                             leader_vias=plan['leader_vias'],
                              previous_name=previous.get('previous_name',old_name) if previous and previous['layer']==layer else old_name)
         shown=board.GetVisibleLayers(); shown.AddLayer(layer); board.SetVisibleLayers(shown)
         # Enregistrer la propriété avant de publier le tableau. Si la deuxième
@@ -239,6 +243,7 @@ def merge(board,layer,side):
     # Vérifier le placement réel, y compris les déplacements manuels effectués
     # après génération. Ne pas reconstruire le plan : conserver ces ajustements.
     obstacles=prepare(board,layer,Options(side=side),excluded_ids(data,side),obstacles_only=True)
+    via_obstacles={}
     for it in items:
         if isinstance(it,p.PCB_TEXT): shape=bounds(it)
         elif isinstance(it,p.PCB_SHAPE):
@@ -246,7 +251,17 @@ def merge(board,layer,side):
             it.TransformShapeToPolygon(poly,layer,0,p.FromMM(.005),p.ERROR_OUTSIDE)
             shape=polygons(poly)
         else: raise ValueError('Objet non graphique dans le repérage.')
-        if not obstacles['safe'].covers(shape) or obstacles['occupied'].intersects(shape):
+        occupied=obstacles['occupied']
+        via_id=record.get('leader_vias',{}).get(uid(it))
+        if via_id:
+            if not isinstance(it,p.PCB_SHAPE) or it.GetShape()!=p.SHAPE_T_SEGMENT:
+                raise ValueError('Trait de rappel modifié : segment attendu.')
+            if via_id not in obstacles['via_apertures']:
+                raise ValueError('Le via désigné a disparu ou son accès a changé. Régénérez les labels.')
+            if via_id not in via_obstacles:
+                via_obstacles[via_id]=leader_obstacles(obstacles['fixed'],obstacles['via_apertures'],via_id,obstacles['solid'])
+            occupied=via_obstacles[via_id]
+        if not obstacles['safe'].covers(shape) or occupied.intersects(shape):
             raise ValueError('Un repère chevauche un obstacle ou la sérigraphie de destination. Ajustez-le avant fusion.')
     removed=None
     try:

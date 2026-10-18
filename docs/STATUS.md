@@ -1,3 +1,28 @@
+# État courant — centres des vias et fantômes — 18 octobre 2026
+
+Implémenté sur main : trait jusqu'au centre du via, exception locale de masque
+avec contrôle des obstacles réels ; association trait/via persistante et reconnue
+par la fusion. Colonne Label imprimé = true/false. Numérotation dans chaque case :
+visible E2.1, fantômes E2.2/E2.3 par distance à son via, puis nouveau visible E2.4.
+Une seule suite, pas de sous-numéros. Tableau et textes dessinés synchronisés.
+
+28 tests natifs réussis (3,910 s). Validation sur copie IPC antérieure de la carte :
+18 accès, 16 labels ; rappel centré, ordre des fantômes, booléens, textes
+cohérents et fusion réussis. Essais sur copie et registre isolé uniquement.
+Les anciens repères restent en place jusqu'à Générer / remplacer. Le cas d'une
+case entièrement masquée conserve un voisin visible adjacent sans changer son
+préfixe géographique ; voir PROJECT_CONTEXT pour cette limite de bord de case.
+
+Mémoire epi-git actualisée ; échanges et clarification dans HISTORY. Couverture
+antérieure toujours partielle, export intégral non fourni. Commit, push main et
+réinstallation suivent l'autorisation de la tâche active ; le SHA exact installé
+et les dix empreintes sont dans .local/last_install.json. Arbre et distant à
+contrôler après publication. Rechargement IPC non garanti si le gestionnaire
+occupe le canal ; aucune sauvegarde ni relance automatique de la carte.
+L'exécution du RUN dans Fusion reste à valider côté utilisateur.
+
+## États et diagnostics précédents (historique)
+
 # État courant — placement avant masquage — 18 octobre 2026
 
 Correction autorisée et réalisée sur main : chercher un ovale libre et son trait
