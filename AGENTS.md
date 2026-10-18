@@ -1,17 +1,33 @@
 # Kicad_Via
 
-Documentation et commentaires en français. L'utilisateur autorise la création
-du plugin de repérage Top/Bottom, labels en drapeaux et tableau de sortie.
-Toute nouvelle portée de modification de code doit être décrite et autorisée.
-Pour un bug : établir cause et preuves avant correction, distinguer les limites.
+Lire `docs/PROJECT_CONTEXT.md`, `docs/DECISIONS.md` et `docs/STATUS.md` pour
+reprendre le projet ; les échanges disponibles et leurs limites sont dans `docs/HISTORY/`.
+Rédiger la documentation et les commentaires en français.
 
-Après **chaque commit**, installer automatiquement le plugin depuis ce commit.
-Le hook `.githooks/post-commit` appelle `tools/install_plugin.py`. Vérifier son
-manifeste SHA-256 et ne jamais installer des fichiers de travail non committés.
+L'utilisateur a autorisé le plugin Top/Bottom, ses drapeaux, son tableau et sa
+simplification à Repère, Net, Case, X/Y entiers en mm. Avant toute nouvelle
+création, modification ou suppression de code, tests, scripts ou configuration
+exécutable, décrire les changements envisagés et obtenir l'accord explicite
+préalable de l'utilisateur. Une demande d'analyse ou de documentation ne donne
+pas cet accord. Commenter les parties non triviales en expliquant leur raison.
+Pour un bug : établir la cause et ses preuves avant correction, distinguer les
+hypothèses et les limites ; ne pas corriger sur le seul symptôme.
+
+Avant chaque déploiement, committer les changements à déployer et vérifier que
+l'installation porte sur ce commit. Ne jamais déployer des fichiers non committés.
+Après **chaque commit**, le hook `.githooks/post-commit` installe automatiquement
+avec `tools/install_plugin.py`. Vérifier le manifeste SHA-256. Après clonage,
+activer le hook : `git config core.hooksPath .githooks` (Python natif KiCad requis).
+Tests : `D:/kicad/bin/python.exe -m unittest discover -s tests -v`.
 Ne pas redémarrer KiCad ni enregistrer une carte utilisateur automatiquement.
 
-Ne jamais effacer le contenu étranger d'une couche. Les seuls objets remplaçables
-sont ceux dont les UUID sont enregistrés dans le registre local Kicad_Via,
-avec concordance des objets et des membres du groupe sur la carte.
-Les listes Top et Bottom ont des numérotations indépendantes.
-Mettre à jour docs/STATUS.md et docs/DECISIONS.md à la fin d'une tâche.
+Ne jamais effacer le contenu étranger d'une couche. Seuls sont remplaçables les
+UUID du registre local Kicad_Via, concordant avec les objets et membres du groupe.
+Les listes et numérotations Top/Bottom sont indépendantes.
+
+À la fin de chaque tâche liée au projet, actualiser les fichiers pertinents de
+`docs/PROJECT_CONTEXT.md`, `docs/DECISIONS.md`, `docs/STATUS.md` et `docs/HISTORY/`
+à partir des sources effectivement disponibles ; consigner les corrections et
+distinguer demandes et réalisations. Ne pas supposer l'accès aux autres chats.
+Le dépôt GitHub est public : ne pas y publier de PCB, registres locaux ou échanges
+confidentiels sans vérifier le périmètre de partage autorisé.

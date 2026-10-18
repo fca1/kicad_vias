@@ -128,19 +128,15 @@ def stage_output(path,side,rows,ext):
     if not path.parent.is_dir(): raise ValueError('Le dossier de sortie doit exister.')
     def escape(value):
         return str(value).replace('|','\\|').replace('\n',' ').replace('\r',' ')
-    xmin,ymin,xmax,ymax=ext
-    origin=(xmin if side=='Top' else xmax,ymax)
     lines=[marker,f'# Kicad_Via — {side}','',
-           'Vue de la face choisie ; X vers la droite, Y vers le haut ; coordonnées en mm.',
-           f'Origine native KiCad : ({origin[0]:.4f} ; {origin[1]:.4f}) mm.',
-           'Cases de 20 mm : A, B, C… en X ; 1, 2, 3… en Y ; suffixe = accès dans la case.',
-           'Accessibilité estimée d’après les empreintes 2D, à confirmer sur carte assemblée.','',
-           '| Repère | Net | Case | X mm | Y mm | X KiCad mm | Y KiCad mm | Ø via mm | Perçage mm | Label imprimé | Voisin | ΔX voisin mm | ΔY voisin mm | UUID via |',
-           '| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- | ---: | ---: | --- |']
+           'Coordonnées arrondies au millimètre, vues de la face choisie ; origine au coin inférieur gauche du contour de la carte.',
+           'X vers la droite, Y vers le haut ; cases de 20 mm.','',
+           '| Repère | Net | Case | X (mm) | Y (mm) |',
+           '| --- | --- | --- | ---: | ---: |']
     for r in rows:
-        values=[r['repere'],r['net'],r['case'],f"{r['x_mm']:.4f}",f"{r['y_mm']:.4f}",
-                f"{r['kicad_x_mm']:.4f}",f"{r['kicad_y_mm']:.4f}",r['diametre_mm'],r['percage_mm'],
-                'oui' if r['imprime'] else 'non',r['voisin'],r['ecart_x_mm'],r['ecart_y_mm'],r['via_uuid']]
+        # Le tableau sert au repérage visuel ; les valeurs précises et UUID
+        # restent dans le registre interne pour les reprises du plugin.
+        values=[r['repere'],r['net'],r['case'],f"{r['x_mm']:.0f}",f"{r['y_mm']:.0f}"]
         lines.append('| '+' | '.join(escape(v) for v in values)+' |')
     fd,name=tempfile.mkstemp(prefix='.kicad_via_',suffix='.tmp',dir=path.parent)
     with os.fdopen(fd,'w',encoding='utf-8',newline='\n') as f: f.write('\n'.join(lines)+'\n')

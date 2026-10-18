@@ -19,7 +19,7 @@ Cliquer sur le bouton **Kicad_Via** et choisir :
 **Générer / remplacer** retient un seul via découvert et accessible par net,
 en privilégiant les accès dégagés. Le label est dans un ovale, avec un trait
 vers son via. Si un repère imprimé est à moins de 3 mm, le label voisin peut
-être omis : le tableau conserve l'accès et indique le voisin avec ses écarts XY.
+être omis : le tableau conserve cet accès.
 Une génération remplace uniquement les UUID précédemment gérés par le plugin.
 
 **Fusionner vers F.SilkS** (Top) ou **B.SilkS** (Bottom) déplace les objets,
@@ -40,8 +40,9 @@ Pour Bottom, X est inversé et les textes sont miroités dans le fichier KiCad
 afin d'être lisibles depuis le dessous. Un repère C2-1 peut exister sur chaque
 face : son tableau Top ou Bottom l'identifie sans ambiguïté.
 
-Le tableau comprend face (titre), repère, net, case, XY de la vue et XY natifs
-KiCad en mm, diamètre, perçage, présence du label, voisin/écarts et UUID du via.
+Le tableau comporte cinq colonnes : **Repère, Net, Case, X (mm), Y (mm)**.
+Les coordonnées de la vue choisie sont arrondies au millimètre, sans décimales.
+La face figure dans le titre ; les données techniques restent internes au plugin.
 Un fichier existant n'est réécrit que s'il est déjà un tableau Kicad_Via de la
 même face. Une liste Bottom n'écrase pas une liste Top.
 
@@ -85,3 +86,15 @@ Une carte sans accès disponible reste inchangée.
 
 Références : [API IPC et plugins KiCad](https://dev-docs.kicad.org/en/apis-and-binding/ipc-api/for-addon-developers/),
 [API native Python](https://docs.kicad.org/doxygen-python-10.0/namespaces.html).
+
+## Mémoire du projet
+
+Dépôt : [fca1/kicad_vias](https://github.com/fca1/kicad_vias).
+La description initiale du dépôt distant est conservée : « Plugin permettant de creer des labels pour le debug de carte hardware ».
+
+Pour reprendre le travail, lire [le contexte](docs/PROJECT_CONTEXT.md),
+[les décisions](docs/DECISIONS.md) puis [l’état](docs/STATUS.md).
+Les sources et limites des échanges archivés sont décrites dans
+[l’historique](docs/HISTORY/2026-10-18_demande_plugin.md).
+Après clonage, activer le hook local avec `git config core.hooksPath .githooks`
+(chemin Python KiCad du poste actuel : `D:/kicad/bin/python.exe`).

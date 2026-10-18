@@ -1,3 +1,24 @@
+# État courant — 18 octobre 2026
+
+Branche `codex/kicad-via`, distant public `fca1/kicad_vias`. Le README initial
+8327aae est conservé par fusion avec l'historique local b8cce99/f83bc54.
+Mémoire epi-git : AGENTS enrichi, PROJECT_CONTEXT créé, décisions complétées,
+extraits des demandes et limites de couverture dans HISTORY. Export intégral
+du chat manquant ; liste exhaustive des autres conversations non disponible.
+
+Dernière correction demandée : sortie limitée à Repère, Net, Case, X (mm),
+Y (mm). Coordonnées de la grille de la face, arrondies au millimètre ; métadonnées
+retirées de l'affichage et conservées dans le registre interne. La sélection
+et le placement des vias ne changent pas. 17 tests natifs relancés : réussis
+le 18 octobre 2026 après cette modification (2,826 s).
+
+En cours : commit de l'intégration, installation depuis ce commit et rechargement
+IPC ; simplification du tableau existant avec sauvegarde ; publication d'une PR.
+Ces actions seront vérifiées avant la fin de tâche. Aucun PCB n'est destiné au
+Git public. La carte originale ne doit pas être enregistrée pour cette mise à jour.
+
+## État précédent conservé comme preuve historique
+
 # État — 18 octobre 2026
 
 Implémentation préparée et vérifiée : moteur de placement, gestion des couches,

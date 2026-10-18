@@ -36,3 +36,24 @@ le nom Kicad_Via_TOP et empêchait d'en choisir une autre. Correction limitée �
 une ancienne couche source connue du registre et restée vide ; nom rendu puis
 réservé sur la nouvelle couche. Sérigraphie fusionnée conservée jusqu'à la
 fusion suivante. Test natif de ce cas réussi. Dernière suite : 17 tests.
+
+## 18 octobre 2026 — GitHub et mémoire epi-git
+
+Dépôt fourni par l'utilisateur : fca1/kicad_vias, public, initialement README seul.
+Conserver le commit distant 8327aae par fusion avec l'historique local ; publier
+sur codex/kicad-via et ouvrir une PR. Ne pas publier les fichiers PCB, tableaux
+utilisateur, registre UUID ni répertoire .local. Ajouter PROJECT_CONTEXT et les
+extraits disponibles dans HISTORY ; les étapes condensées ne deviennent pas une
+transcription intégrale. Un export original reste nécessaire pour l'exhaustivité.
+
+## 18 octobre 2026 — Tableau simplifié à la demande de l'utilisateur
+
+L'ancien export associait coordonnées de vue et coordonnées natives, et exposait
+les métadonnées du moteur. Ce format était implémenté dans stage_output, confirmé
+par lecture du code ; il dépassait le besoin exprimé de repérage visuel.
+L'utilisateur demande de retirer ces informations. Garder uniquement Repère, Net,
+Case, X (mm), Y (mm), arrondis sans décimales. Garder les coordonnées de la grille
+physique vue depuis Top ou Bottom. Les valeurs précises et UUID restent dans le
+registre interne, indispensable à la reprise sûre des objets. La case continue
+d'être calculée avant arrondi ; un point proche d'une limite peut donc s'afficher
+sur cette limite sans changer de case.
