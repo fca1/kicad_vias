@@ -120,23 +120,25 @@ def stage_output(path,side,rows,ext):
     face : une liste Bottom ne remplace jamais une liste Top par mégarde.
     """
     path=Path(path).expanduser().resolve()
-    marker=f'<!-- Kicad_Via v1 {side} -->'
+    header=[f'# {side}','','| Repère | Net | X (mm) | Y (mm) |',
+            '| --- | --- | ---: | ---: |']
     if path.suffix.lower() not in ('.nd','.md'):
         raise ValueError('Le tableau doit avoir une extension .nd ou .md.')
-    if path.exists() and not path.read_text(encoding='utf-8-sig').startswith(marker):
-        raise ValueError('Ce fichier ne contient pas un tableau Kicad_Via de cette face. Choisissez un autre nom.')
+    if path.exists():
+        text=path.read_text(encoding='utf-8-sig')
+        # Reconnaître aussi l'ancien format pour permettre sa simplification,
+        # tout en gardant la séparation des faces et le refus des autres fichiers.
+        if not (text.startswith(f'<!-- Kicad_Via v1 {side} -->')
+                or text.startswith('\n'.join(header)+'\n')):
+            raise ValueError('Ce fichier ne contient pas un tableau Kicad_Via de cette face. Choisissez un autre nom.')
     if not path.parent.is_dir(): raise ValueError('Le dossier de sortie doit exister.')
     def escape(value):
         return str(value).replace('|','\\|').replace('\n',' ').replace('\r',' ')
-    lines=[marker,f'# Kicad_Via — {side}','',
-           'Coordonnées arrondies au millimètre, vues de la face choisie ; origine au coin inférieur gauche du contour de la carte.',
-           'X vers la droite, Y vers le haut ; cases de 20 mm.','',
-           '| Repère | Net | Case | X (mm) | Y (mm) |',
-           '| --- | --- | --- | ---: | ---: |']
+    lines=header
     for r in rows:
         # Le tableau sert au repérage visuel ; les valeurs précises et UUID
         # restent dans le registre interne pour les reprises du plugin.
-        values=[r['repere'],r['net'],r['case'],f"{r['x_mm']:.0f}",f"{r['y_mm']:.0f}"]
+        values=[r['repere'],r['net'],f"{r['x_mm']:.1f}",f"{r['y_mm']:.1f}"]
         lines.append('| '+' | '.join(escape(v) for v in values)+' |')
     fd,name=tempfile.mkstemp(prefix='.kicad_via_',suffix='.tmp',dir=path.parent)
     with os.fdopen(fd,'w',encoding='utf-8',newline='\n') as f: f.write('\n'.join(lines)+'\n')

@@ -110,3 +110,13 @@ incluse dans ce commit de fusion. Installation post-commit depuis son archive,
 puis publication main et contrôle de correspondance avec le manifeste installé.
 Les empreintes exactes sont dans .local/last_install.json, privé. L'exécution
 manuelle de RUN dans Fusion reste la prochaine validation utilisateur.
+
+## 18 octobre 2026 — Dernier allègement du tableau
+
+Après fusion de PR nº 1 sur main au commit 3c0a07c, l'utilisateur retire la
+colonne Case (déjà contenue dans A3.1), demande un arrondi à 0,1 mm et seulement
+Top ou Bottom en titre. Le format final est Repère, Net, X (mm), Y (mm), avec
+une décimale. Supprimer aussi le marqueur et les paragraphes techniques de
+l'en-tête ; reconnaître le nouveau titre avec son schéma complet et l'ancien
+marqueur pour permettre la migration, en conservant le refus de l'autre face.
+23 tests réussis après ce changement, dont régénération et séparation des fichiers.

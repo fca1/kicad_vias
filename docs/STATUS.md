@@ -1,3 +1,22 @@
+# État courant — tableau final — 18 octobre 2026
+
+PR nº 1 fusionnée et reconnue MERGED par GitHub, commit main `3c0a07c`.
+Installation de ce commit vérifiée : dix fichiers SHA-256, référence distante
+identique. Nouvelle correction demandée ensuite sur main : tableau à quatre
+colonnes Repère, Net, X (mm), Y (mm), arrondi à 0,1 mm, titre Top ou Bottom seul.
+Case, commentaires et marqueur technique ne figurent plus dans le fichier.
+23 tests réussis après ce changement (3,530 s), dont séparation Top/Bottom,
+réécriture du format, refus des fichiers étrangers et préparation Fusion.
+
+La présente mise à jour est committée sur main ; l'installation automatique
+reste liée à ce commit (SHA exact et empreintes dans .local/last_install.json).
+Le rechargement IPC nécessite de fermer le sélecteur et les options KiCad s'ils
+sont encore ouverts. Les labels existants sont à régénérer pour devenir A3.1.
+L'exécution du RUN dans Fusion reste la prochaine validation utilisateur.
+Mémoire epi-git actualisée ; historique antérieur toujours partiel.
+
+## État avant la dernière correction du tableau
+
 # État — repères A3.1 et préparation Fusion — 18 octobre 2026
 
 Changements intégrés sur main par le commit de fusion de la PR nº 1 : point à la place du tiret, bouton Copier

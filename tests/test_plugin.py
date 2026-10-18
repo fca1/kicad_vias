@@ -77,7 +77,10 @@ class PluginTests(unittest.TestCase):
         data=service.state(self.b)['faces']
         for side in ('Top','Bottom'):
             self.assertTrue(all(r['repere'].endswith('.1') for r in data[side]['preview']['rows']))
-            self.assertTrue((self.root/(side+'.nd')).read_text(encoding='utf-8').startswith('<!-- Kicad_Via v1 '+side))
+            text=(self.root/(side+'.nd')).read_text(encoding='utf-8')
+            self.assertTrue(text.startswith('# '+side+'\n\n| Repère | Net | X (mm) | Y (mm) |\n'))
+            self.assertNotIn('Case',text)
+            self.assertRegex(text,r'\| -?\d+\.\d \| -?\d+\.\d \|')
         bottom=[it for it in service.layer_objects(self.b,p.User_2) if isinstance(it,p.PCB_TEXT)]
         self.assertTrue(all(it.IsMirrored() for it in bottom))
         top_ids=set(data['Top']['preview']['ids']);self.generate('Bottom',p.User_2)

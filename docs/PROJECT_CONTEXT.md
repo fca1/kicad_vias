@@ -26,16 +26,22 @@ placement évitant composants, ouvertures de masque et sérigraphie. À moins de
 3 mm d'un label déjà imprimé, le label voisin peut être omis ; son accès reste
 au tableau. Taille par défaut 0,65 mm, plage 0,4–2 mm.
 
-Correction utilisateur du 18 octobre 2026 : réduire le tableau à Repère, Net,
+Première correction du 18 octobre 2026 (remplacée ensuite) : réduire le tableau à Repère, Net,
 Case, X (mm), Y (mm), sans décimales. Conserver les coordonnées de la grille
 vue de la face, retirer coordonnées natives, diamètres, perçage, présence du
 label, voisin, écarts et UUID de l'affichage. Ces données restent internes.
+
+Dernière correction du 18 octobre 2026 : supprimer Case, passer les coordonnées
+au dixième de millimètre et ne garder que Top ou Bottom comme titre. Le tableau
+final comporte Repère, Net, X (mm), Y (mm), sans commentaire ni marqueur technique.
+Reconnaître l'ancien format pour le remplacer, tout en refusant l'autre face et
+les fichiers étrangers. Les coordonnées précises restent dans le registre.
 
 ## Architecture vérifiée dans le code
 
 - `plugin/Kicad_Via/action.py` : ActionPlugin natif, dialogue wxPython et bandeau.
 - `model.py` : options et coordonnées ; `geometry.py` : sélection et placement.
-- `service.py` : propriété UUID, génération, fusion et tableau à cinq colonnes.
+- `service.py` : propriété UUID, génération, fusion et tableau à quatre colonnes.
 - Registre local `%LOCALAPPDATA%/Kicad_Via/ownership` : nécessaire pour reprendre
   les objets après réouverture ou sur un autre poste. Pas de simple adoption par nom.
 - `tools/install_plugin.py` : archive du commit, sauvegarde et vérification SHA-256.

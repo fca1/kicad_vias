@@ -32,3 +32,15 @@ J’ai aussi identifié pourquoi la régénération pouvait être refusée dans 
 ## Assistant
 
 Les **23 tests passent**, et la reprise depuis User.1 fonctionne aussi sur la copie de votre carte. Je vais maintenant fusionner la PR sur `main`, avec la mémoire à jour, puis vérifier que le commit installé correspond exactement à celui publié.
+
+## Utilisateur
+
+Pour la liste dans le fichier&#x20;
+
+- La colonne case ne sert à rien, tu peux la supprimer on la connait par le nom du via
+- On va plutot arrondir au dixieme de milimettre
+- Dans l'entete, tu as top ou bottom mais pas le reste de blabla&#x20;
+
+## Assistant
+
+La PR est fusionnée et le plugin est installé depuis `main`. J’applique vos nouvelles corrections : **Repère, Net, X (mm), Y (mm)**, coordonnées au **dixième de millimètre**, et seulement **Top** ou **Bottom** au-dessus du tableau.

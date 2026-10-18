@@ -40,9 +40,10 @@ Pour Bottom, X est inversé et les textes sont miroités dans le fichier KiCad
 afin d'être lisibles depuis le dessous. Un repère C2.1 peut exister sur chaque
 face : son tableau Top ou Bottom l'identifie sans ambiguïté.
 
-Le tableau comporte cinq colonnes : **Repère, Net, Case, X (mm), Y (mm)**.
-Les coordonnées de la vue choisie sont arrondies au millimètre, sans décimales.
-La face figure dans le titre ; les données techniques restent internes au plugin.
+Le tableau comporte quatre colonnes : **Repère, Net, X (mm), Y (mm)**.
+Les coordonnées de la vue choisie sont arrondies au dixième de millimètre.
+Seul **Top** ou **Bottom** figure au-dessus du tableau, sans autre commentaire.
+La case se lit dans le repère (A3.1 = case A3) ; les données techniques restent internes.
 Un fichier existant n'est réécrit que s'il est déjà un tableau Kicad_Via de la
 même face. Une liste Bottom n'écrase pas une liste Top.
 
