@@ -140,44 +140,47 @@ def prepare(board,layer,opt,exclude=(),obstacles_only=False):
     for row in chosen:
         x,y=row['x'],row['y']; label=row['label']
         neighbor=None
-        if opt.omit_nearby:
-            close=[r for r in printed if math.hypot(r['x']-x,r['y']-y)<=opt.proximity]
-            if close: neighbor=min(close,key=lambda r:math.hypot(r['x']-x,r['y']-y))
         pos=None; leader_path=[]
-        if neighbor is None:
-            sample=text_item(board,label,0,0,opt.label_size,layer,opt.side)
-            tb=bounds(sample); x0,y0,x1,y1=tb.bounds
-            half_height=(y1-y0)/2+.2
-            half_width=max((x1-x0)/2+.25,half_height+.1)
-            core=LineString([(-half_width+half_height,0),(half_width-half_height,0)])
-            oval=core.buffer(half_height,quad_segs=20)
-            # Le trait de rappel est obligatoire. On peut décaler le drapeau,
-            # mais pas l'imprimer sans désigner son via dans une zone dense.
-            for distance in [1.5+.5*i for i in range(18)]:
-                for angle in range(0,360,15):
-                    a=math.radians(angle); tx=x+distance*math.cos(a); ty=y+distance*math.sin(a)
-                    shape=translate(oval,tx,ty)
-                    if not free(shape.buffer(.15)): continue
-                    end=nearest_points(Point(x,y),shape.boundary)[1]
-                    d=math.hypot(end.x-x,end.y-y)
-                    start_radius=row['radius']+max(0,mm(row['via'].GetSolderMaskExpansion()))+.32
-                    if d<=start_radius+.15: continue
-                    start=(x+(end.x-x)*start_radius/d,y+(end.y-y)*start_radius/d)
-                    routes=[ [start,(end.x,end.y)],
-                             [start,(start[0],end.y),(end.x,end.y)],
-                             [start,(end.x,start[1]),(end.x,end.y)] ]
-                    path=next((r for r in routes if free(LineString(r).buffer(.08))),None)
-                    if path is None: continue
-                    pos=(tx,ty); leader_path=path
-                    additions.append(text_item(board,label,tx,ty,opt.label_size,layer,opt.side))
-                    additions.extend(capsule(board,shape,layer))
-                    additions.extend(line(board,a,b,layer) for a,b in zip(path,path[1:]) if a!=b)
-                    protected=unary_union([shape.buffer(.2),LineString(path).buffer(.18)])
-                    occupied=unary_union([occupied,protected]); protections.append(protected)
-                    printed.append(row)
-                    break
-                if pos: break
-            if pos is None:
+        sample=text_item(board,label,0,0,opt.label_size,layer,opt.side)
+        tb=bounds(sample); x0,y0,x1,y1=tb.bounds
+        half_height=(y1-y0)/2+.2
+        half_width=max((x1-x0)/2+.25,half_height+.1)
+        core=LineString([(-half_width+half_height,0),(half_width-half_height,0)])
+        oval=core.buffer(half_height,quad_segs=20)
+        # Le trait de rappel est obligatoire. On peut décaler le drapeau,
+        # mais pas l'imprimer sans désigner son via dans une zone dense.
+        for distance in [1.5+.5*i for i in range(18)]:
+            for angle in range(0,360,15):
+                a=math.radians(angle); tx=x+distance*math.cos(a); ty=y+distance*math.sin(a)
+                shape=translate(oval,tx,ty)
+                if not free(shape.buffer(.15)): continue
+                end=nearest_points(Point(x,y),shape.boundary)[1]
+                d=math.hypot(end.x-x,end.y-y)
+                start_radius=row['radius']+max(0,mm(row['via'].GetSolderMaskExpansion()))+.32
+                if d<=start_radius+.15: continue
+                start=(x+(end.x-x)*start_radius/d,y+(end.y-y)*start_radius/d)
+                routes=[ [start,(end.x,end.y)],
+                         [start,(start[0],end.y),(end.x,end.y)],
+                         [start,(end.x,start[1]),(end.x,end.y)] ]
+                path=next((r for r in routes if free(LineString(r).buffer(.08))),None)
+                if path is None: continue
+                pos=(tx,ty); leader_path=path
+                additions.append(text_item(board,label,tx,ty,opt.label_size,layer,opt.side))
+                additions.extend(capsule(board,shape,layer))
+                additions.extend(line(board,a,b,layer) for a,b in zip(path,path[1:]) if a!=b)
+                protected=unary_union([shape.buffer(.2),LineString(path).buffer(.18)])
+                occupied=unary_union([occupied,protected]); protections.append(protected)
+                printed.append(row)
+                break
+            if pos: break
+        if pos is None:
+            # La proximité ne dispense jamais de chercher un ovale et un
+            # rappel libres. Elle autorise seulement ce repli après échec
+            # de tous les placements, avec un voisin effectivement imprimé.
+            if opt.omit_nearby:
+                close=[r for r in printed if math.hypot(r['x']-x,r['y']-y)<=opt.proximity]
+                if close: neighbor=min(close,key=lambda r:math.hypot(r['x']-x,r['y']-y))
+            if neighbor is None:
                 raise ValueError(f'Aucune place lisible pour {label} ({row["net"]}). '
                                  'Réduisez la taille du label ; aucune modification effectuée.')
         v=row['via']

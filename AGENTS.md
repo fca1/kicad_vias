@@ -8,8 +8,9 @@ L'utilisateur a autorisé le plugin Top/Bottom, ses drapeaux, son tableau et sa
 simplification finale à Repère, Net, X/Y au dixième de mm, titre Top/Bottom seul. Le 18 octobre 2026, il
 ajoute les noms A3.1, l'export graphique ULP/RUN avec copie presse-papiers sur
 clic et autorise la fusion de la PR nº 1 vers main avec réinstallation exacte.
-Avant toute nouvelle
-création, modification ou suppression de code, tests, scripts ou configuration
+L'utilisateur autorise ensuite la recherche de placement avant tout masquage
+de proximité, avec commit, push main et réinstallation (18 octobre 2026).
+Avant toute nouvelle création, modification ou suppression de code, tests, scripts ou configuration
 exécutable, décrire les changements envisagés et obtenir l'accord explicite
 préalable de l'utilisateur. Une demande d'analyse ou de documentation ne donne
 pas cet accord. Commenter les parties non triviales en expliquant leur raison.

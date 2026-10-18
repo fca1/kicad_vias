@@ -135,13 +135,35 @@ class PluginTests(unittest.TestCase):
         v=p.PCB_VIA(self.b);v.SetPosition(vec(65,56));v.SetWidth(p.FromMM(.8));v.SetDrill(p.FromMM(.3))
         v.SetLayerPair(p.F_Cu,p.B_Cu);v.SetNet(net);v.SetFrontTentingMode(p.TENTING_MODE_NOT_TENTED);self.b.Add(v)
         plan=prepare(self.b,p.User_1,Options())
-        self.assertLess(plan['printed'],len(plan['rows']))
+        self.assertEqual(plan['printed'],len(plan['rows']))
         labels={r['repere'] for r in plan['rows'] if r['imprime']}
         self.assertTrue(all(r['voisin'] in labels for r in plan['rows'] if not r['imprime']))
         ids={r['repere'] for r in plan['rows'] if r['net'] in ('N3','NEAR_N3')}
         self.assertEqual(len(ids),2)
+        self.assertTrue(all(r['rappel'] and r['label_xy'] for r in plan['rows']))
         dense=prepare(self.b,p.User_1,Options(omit_nearby=False))
         self.assertEqual(dense['printed'],len(dense['rows']))
+
+    def test_proximity_fallback_only_after_no_free_leader(self):
+        net=p.NETINFO_ITEM(self.b,'NEAR_N3');self.b.Add(net)
+        v=p.PCB_VIA(self.b);v.SetPosition(vec(65,56));v.SetWidth(p.FromMM(.8));v.SetDrill(p.FromMM(.3))
+        v.SetLayerPair(p.F_Cu,p.B_Cu);v.SetNet(net);v.SetFrontTentingMode(p.TENTING_MODE_NOT_TENTED);self.b.Add(v)
+        # Ouverture de masque autour de N3 : chaque départ de rappel croise
+        # cet obstacle, tandis que le via voisin conserve des directions libres.
+        mask=p.PCB_SHAPE(self.b);mask.SetShape(p.SHAPE_T_RECT);mask.SetLayer(p.F_Mask)
+        mask.SetStart(vec(64.5,54.5));mask.SetEnd(vec(65.5,55.5));mask.SetWidth(p.FromMM(.1));self.b.Add(mask)
+        plan=prepare(self.b,p.User_1,Options())
+        rows={r['net']:r for r in plan['rows']}
+        self.assertTrue(rows['NEAR_N3']['imprime'])
+        self.assertFalse(rows['N3']['imprime'])
+        self.assertIsNone(rows['N3']['label_xy'])
+        self.assertEqual(rows['N3']['rappel'],[])
+        self.assertEqual(rows['N3']['voisin'],rows['NEAR_N3']['repere'])
+        with self.assertRaisesRegex(ValueError,'Aucune place lisible'):
+            prepare(self.b,p.User_1,Options(omit_nearby=False))
+        # Sans voisin imprimé dans le rayon autorisé, ne pas masquer en silence.
+        with self.assertRaisesRegex(ValueError,'Aucune place lisible'):
+            prepare(self.b,p.User_1,Options(proximity=.5))
 
     def test_change_preview_layer(self):
         self.generate();self.generate(layer=p.User_2)

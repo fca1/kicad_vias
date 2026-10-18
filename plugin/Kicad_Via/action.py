@@ -97,7 +97,7 @@ class ViaDialog(wx.Dialog):
         grid.Add(self.output,1,wx.EXPAND)
         outer.Add(grid,0,wx.EXPAND|wx.LEFT|wx.RIGHT|wx.BOTTOM,12)
         self.grid=wx.CheckBox(self,label='Ajouter la grille en pointillés — pas de 20 mm'); self.grid.SetValue(True)
-        self.near=wx.CheckBox(self,label='Alléger les labels proches — moins de 3 mm'); self.near.SetValue(True)
+        self.near=wx.CheckBox(self,label='Masquer en dernier recours — voisin à moins de 3 mm'); self.near.SetValue(True)
         outer.Add(self.grid,0,wx.LEFT|wx.RIGHT|wx.BOTTOM,12)
         outer.Add(self.near,0,wx.LEFT|wx.RIGHT|wx.BOTTOM,12)
         info=wx.StaticText(self,label='C2.1 : colonne C, ligne 2, accès 1. Top et Bottom ont deux listes séparées.\n'

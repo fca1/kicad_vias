@@ -120,3 +120,23 @@ une décimale. Supprimer aussi le marqueur et les paragraphes techniques de
 l'en-tête ; reconnaître le nouveau titre avec son schéma complet et l'ancien
 marqueur pour permettre la migration, en conservant le refus de l'autre face.
 23 tests réussis après ce changement, dont régénération et séparation des fichiers.
+
+## 18 octobre 2026 — Priorité au placement du label avant masquage
+
+Autorisation explicite après diagnostic et proposition : modifier, actualiser la
+mémoire epi-git, committer, pousser main et réinstaller. Cause établie : le voisin
+à moins de 3 mm était recherché avant le placement et court-circuitait toute
+recherche d'ovale/rappel, même si une zone libre existait. Déplacer ce choix de
+repli après la recherche complète, sans changer la sélection d'un seul via par net.
+Le voisin de repli doit effectivement être imprimé ; l'option doit être active.
+Sans voisin admissible ou avec l'option désactivée, échec explicite et carte intacte.
+Le libellé de l'option précise désormais qu'il s'agit d'un dernier recours.
+
+24 tests passent. Le cas de deux accès proches en espace libre conserve les deux
+labels et leurs rappels ; un obstacle interdisant tout départ de rappel vérifie
+le masquage conditionnel, le refus sans option et le refus avec un rayon insuffisant.
+Sur copie fraîche de la carte obtenue par IPC, 18 accès, 14 puis 16 labels : E2.2
+et F2.4 rétablis, génération et fusion réussies sur copie. La recherche reste
+bornée à 1,5–10 mm et aux routes directes/à un coude ; aucune garantie de placement
+global optimal ni qualification physique 3D. Carte et registres utilisateur
+préservés ; copies, diagnostics détaillés et sorties restent dans .local.

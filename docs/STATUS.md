@@ -1,3 +1,40 @@
+# État courant — placement avant masquage — 18 octobre 2026
+
+Correction autorisée et réalisée sur main : chercher un ovale libre et son trait
+vers le via avant d'envisager le masquage. Le voisin à moins de 3 mm ne déclenche
+plus d'omission anticipée. Repli seulement après échec de recherche, avec option
+active et voisin imprimé ; sinon refus explicite de la génération.
+L'interface et le README décrivent cette priorité. Un seul accès par net reste retenu.
+
+24 tests natifs réussis (3,780 s), incluant placement de deux labels proches,
+repli par obstacle, refus sans option ou sans voisin assez proche. Comparaison
+sur copie fraîche IPC : 18 accès, 14 puis 16 labels ; E2.2 et F2.4 rétablis.
+Génération et fusion en sérigraphie réussies sur copie. Aucun changement appliqué
+à la carte ouverte par ces validations. Pour l'appliquer : Générer / remplacer.
+
+Mémoire epi-git actualisée : contexte, décisions, état et historique du diagnostic,
+proposition puis accord explicite. Couverture des échanges antérieurs toujours
+partielle, export original non fourni. Commit et push main autorisés ; installation
+post-commit depuis son archive, avec SHA et empreintes dans .local/last_install.json.
+Le rechargement IPC dépend de l'absence de dialogue modal ouvert dans KiCad.
+L'exécution du RUN dans Fusion reste à valider par l'utilisateur.
+
+## État précédent et diagnostic initial (historique)
+
+## Analyse du groupe illustré E2-1 — 18 octobre 2026
+
+Question utilisateur : pourquoi les autres vias visibles ne portent-ils pas de
+label ? Diagnostic par lecture de geometry.prepare et du registre local du
+repérage fusionné, confronté à la copie IPC de validation. Deux règles se
+cumulent : un seul via représentatif par net, puis omission du label si un
+représentant imprimé est à moins de 3 mm. Le groupe comporte des nets distincts :
+un voisin a son représentant choisi ailleurs, un autre a un représentant proche
+dont le label est omis. Les deux explications sont établies pour ce repérage ;
+la capture utilisateur ne fournit pas à elle seule les nets ni l'échelle.
+Au stade du diagnostic, aucune modification de code n’était encore demandée ni réalisée. Une simple
+désactivation de l'allègement ne change pas le choix du représentant par net.
+Les détails du PCB et la capture restent locaux, hors publication Git.
+
 # État courant — tableau final — 18 octobre 2026
 
 PR nº 1 fusionnée et reconnue MERGED par GitHub, commit main `3c0a07c`.

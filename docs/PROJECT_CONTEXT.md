@@ -22,9 +22,12 @@ Bouton avec icône via/drapeau dans le bandeau. Installer après chaque commit.
 Repères par cases de 20 mm : C2.1, colonne C, ligne 2, accès 1 ; A…Z puis AA…
 Origine au coin inférieur gauche de l'enveloppe Edge.Cuts vue de la face choisie,
 X vers la droite, Y vers le haut ; Bottom inverse X. Ovale et trait de rappel ;
-placement évitant composants, ouvertures de masque et sérigraphie. À moins de
-3 mm d'un label déjà imprimé, le label voisin peut être omis ; son accès reste
-au tableau. Taille par défaut 0,65 mm, plage 0,4–2 mm.
+placement évitant composants, ouvertures de masque et sérigraphie. Depuis la
+correction autorisée du 18 octobre 2026, chercher d'abord un ovale et son rappel
+libres pour chaque accès. Le masquage de proximité n'est permis qu'après échec
+des placements, si l'option est active et qu'un accès imprimé est à moins de
+3 mm. L'accès masqué reste au tableau ; sans ce repli, la génération est refusée.
+Taille par défaut 0,65 mm, plage 0,4–2 mm.
 
 Première correction du 18 octobre 2026 (remplacée ensuite) : réduire le tableau à Repère, Net,
 Case, X (mm), Y (mm), sans décimales. Conserver les coordonnées de la grille
@@ -46,7 +49,7 @@ les fichiers étrangers. Les coordonnées précises restent dans le registre.
   les objets après réouverture ou sur un autre poste. Pas de simple adoption par nom.
 - `tools/install_plugin.py` : archive du commit, sauvegarde et vérification SHA-256.
 - `tools/adopt_previous.py` : migration bornée sur preuves de l'ancien repérage.
-- `tests/test_plugin.py` : 23 tests natifs, dont interface réelle wxPython.
+- `tests/test_plugin.py` : 24 tests natifs, dont interface réelle wxPython.
 
 KiCad audité : 10.0.7 sous Windows, Python natif avec wxPython 4.3.1 et Shapely
 2.2.0. Utiliser IPC au maximum pour lecture de la carte en mémoire et rechargement ;
@@ -73,6 +76,23 @@ Le parcours de référence a été lu dans le dépôt local `script_krt_fusion`,
 `tools/kicad_routage_vers_fusion.py` le 18 octobre 2026 ; ce n'est pas une copie
 complète du convertisseur, ni une dépendance au plugin installé. Le dépôt public
 correspondant est https://github.com/fca1/kicad_plugin_fusion2kicad.
+
+## Évolution du 18 octobre 2026 — placement avant masquage
+
+Cause confirmée dans geometry.prepare : la sélection d'un voisin proche précédait
+la recherche et l'instruction `if neighbor is None` empêchait toute tentative de
+placement pour les accès concernés. La capture et le registre local ont révélé
+le cas ; la copie IPC de la carte a permis de comparer avant/après. La proximité
+est maintenant consultée uniquement après épuisement de la recherche de placement.
+Le choix d'un seul via par net reste identique ; cette correction ne crée pas
+un repère supplémentaire sur chaque via du même net. La recherche reste bornée
+aux placements existants (1,5–10 mm, angles de 15°, rappel direct ou à un coude).
+
+24 tests natifs passent, dont deux accès proches tous deux imprimés quand la place
+existe, et repli sans placement possible (option, rayon et voisin imprimé requis).
+Sur copie récente : 18 accès, 14 puis 16 labels ; E2.2 et F2.4 rétablis. Génération
+et fusion sur copie vérifiées ; la carte originale n'est pas modifiée par ces essais.
+Historique : [diagnostic et autorisation](HISTORY/2026-10-18_diagnostic_labels_proches.md).
 
 ## Sources et couverture
 
