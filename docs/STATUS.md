@@ -19,6 +19,21 @@ post-commit depuis son archive, avec SHA et empreintes dans .local/last_install.
 Le rechargement IPC dépend de l'absence de dialogue modal ouvert dans KiCad.
 L'exécution du RUN dans Fusion reste à valider par l'utilisateur.
 
+## Publication et installation vérifiées
+
+Commit fonctionnel ef54dc3 publié sur main et installé : dix fichiers vérifiés
+SHA-256, HEAD et référence distante identiques, arbre propre. La présente mise à
+jour documentaire est également installée par le hook depuis son propre commit ;
+consulter .local/last_install.json pour le SHA final exact.
+
+Le rechargement à chaud n'est pas confirmé : IPC renvoie « no handler available »
+pour RunAction ; le gestionnaire et l'éditeur ont été relancés entre les opérations
+et le canal courant ne publie plus cette action. L'interface de l'éditeur est
+accessible mais les tentatives de sélection du menu n'ont pas ouvert le rechargement.
+L'installation sur disque est vérifiée ; recharger les plugins depuis KiCad avant
+Générer / remplacer si l'éditeur garde une version déjà chargée. Aucun redémarrage
+ni enregistrement automatique du PCB n'a été effectué.
+
 ## État précédent et diagnostic initial (historique)
 
 ## Analyse du groupe illustré E2-1 — 18 octobre 2026

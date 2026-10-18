@@ -140,3 +140,10 @@ et F2.4 rétablis, génération et fusion réussies sur copie. La recherche rest
 bornée à 1,5–10 mm et aux routes directes/à un coude ; aucune garantie de placement
 global optimal ni qualification physique 3D. Carte et registres utilisateur
 préservés ; copies, diagnostics détaillés et sorties restent dans .local.
+
+Publication et installation du correctif ef54dc3 vérifiées : dix empreintes,
+main distant identique. Le rechargement IPC a échoué avec « no handler available »
+pour RunAction sur le canal courant ; ne pas confondre installation vérifiée et
+rechargement en mémoire. Laisser à l'utilisateur le rechargement depuis KiCad,
+sans redémarrer ni enregistrer la carte. La mise à jour documentaire finale
+reste elle aussi soumise à l'installation automatique depuis son commit.

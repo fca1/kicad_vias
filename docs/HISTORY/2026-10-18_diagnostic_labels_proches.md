@@ -48,3 +48,7 @@ La correction passe les **24 tests**. Un via proche garde désormais son label d
 ## Assistant
 
 Sur une copie récente de votre carte, on passe de **14 à 16 labels pour 18 accès** : **E2.2** est bien rétabli, ainsi que **F2.4**. La génération puis la fusion en sérigraphie réussissent sur cette copie. Je finalise la mémoire epi-git avant la publication et la réinstallation.
+
+## Assistant
+
+Le commit **ef54dc3** est poussé sur `main` et réinstallé ; les dix fichiers correspondent aux empreintes du commit. La mémoire epi-git est incluse. Je vérifie encore le rechargement dans l’éditeur ouvert, car le canal IPC répond actuellement depuis le gestionnaire KiCad.
