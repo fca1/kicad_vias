@@ -182,3 +182,18 @@ sur une copie, sans enregistrer le PCB ; lancer avec le Python natif KiCad et
 
 Les anciens chemins `.nd` mémorisés sont convertis en `.md` lors de la prochaine
 génération, en conservant le fichier `.nd` original.
+
+
+## Version externe pour la nightly 10.99
+
+Le paquet contient un manifeste IPC et un dialogue externe. Dans KiCad, activer
+API enabled et laisser le gestionnaire installer les dépendances Python du
+plugin. Renommer une fois deux couches User libres en **Kicad_Via_TOP** et
+**Kicad_Via_BOTTOM**, puis cliquer sur le bouton **Kicad_Via** et **Actualiser**.
+Choisir la face, la taille, la grille et le fichier .md, puis générer. La fusion
+vers Silk et la préparation ULP avec copie RUN sont disponibles dans ce dialogue.
+
+Le renommage manuel est un compromis accepté en attendant une commande IPC
+adaptée. La version externe n'utilise ni pcbnew ni wx. Le nom d'une couche ne
+permet pas de remplacer des dessins inconnus. Les détails de qualification et
+limites de cette première version sont dans [la migration IPC](docs/IPC_MIGRATION.md).

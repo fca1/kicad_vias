@@ -114,3 +114,53 @@ Le sélecteur et les noms par défaut utilisent .md. Les chemins mémorisés .nd
 et les noms sans extension sont normalisés en .md ; les anciens fichiers .nd
 sont conservés. Le contrôle anti-écrasement s'applique à la destination .md.
 Les documents historiques gardent leurs références .nd comme traces de l'époque.
+
+
+## Portage externe 10.99 — 19 octobre 2026 (validation GUI en cours)
+
+Autorisation explicite « go » après le diagnostic du lanceur ; compromis de
+renommage manuel initial accepté par « ok », puis « compromis temporaire ».
+La couche User doit déjà s'appeler Kicad_Via_TOP ou Kicad_Via_BOTTOM. Le nom ne
+donne jamais le droit de remplacer des objets étrangers : contrôle UUID/groupe.
+UpdateBoardStackup reste non implémenté sur la build 89476220a8 et le master
+inspecté. Le ticket officiel 25384 demande son implémentation, sans calendrier
+confirmé ni garantie de couverture des noms User.
+
+Nouveau chemin : plugin.json -> external.py (Tkinter externe) -> ipc_service,
+ipc_capture, ipc_drawing. Le même placement.py est utilisé. ownership.py extrait
+le registre/tableau du service natif ; fusion_protocol.py partage le rendu ULP.
+ipc_fusion obtient les traits de police via GetTextAsShapes, sans substitution.
+Le chemin externe n'importe ni pcbnew ni wx, vérifié par interdiction d'import.
+La version KiCad 10 conserve son lanceur natif, sans manifeste IPC pour éviter
+un second bouton. L'installateur déploie chaque commit sur 10.0 et 10.99 si le
+dossier utilisateur 10.99 existe, avec deux manifestes SHA-256 séparés.
+
+La capture IPC reconstruit les contours et les enveloppes à partir des formes,
+polygones de pastille et traits de texte du serveur. Les approximations de
+courbes ne sont pas identiques aux polygones natifs dans tous les cas : la
+parité mesurée porte sur les résultats de placement, pas une identité générale
+de toutes les enveloppes. Les formes non prises en charge sont refusées.
+Trou oblong dans une enveloppe : refus explicite, qualification encore requise.
+Les règles de masque personnalisées et toutes les combinaisons de polices,
+formes et empreintes ne sont pas encore qualifiées. Ne pas présenter cette
+première version comme universellement équivalente à l'ancien backend.
+
+Preuves : 54 tests, dont import sans SWIG/wx, masque hérité/explicite, refus de
+contenu étranger, champ invisible et constructeur de dessins. Sur six cas
+synthétiques Top/Bottom à 0,4/0,65/1,2 mm : métriques IPC et messages de dessin
+identiques aux natifs. La copie réelle retrouve 18 accès et 16 labels Top,
+tableau et 349 éléments du plan strictement identiques (grille comprise).
+Bottom sans accès : même plan de grille de 572 éléments ; le service refuse la
+génération sans accès, conformément au comportement existant.
+
+Un écart initial de deux tirets provenait des champs masqués : leur texte interne
+IPC porte visible=true même quand le champ est invisible. Corrigé en consultant
+la visibilité du Field ; test de régression ajouté. Les essais API réels sur
+une carte synthétique dédiée réussissent génération/fusion Top et Bottom.
+Le parcours depuis le bouton doit encore être vérifié après installation.
+
+Build 2520 : groupe créé par IPC après push des dessins, donc undo distinct.
+Les tableaux entièrement fantômes sans dessin sont identifiés par les UUID des
+vias de la carte dans le registre, sans inventer d'objet graphique caché.
+Une modification de la carte pendant le calcul invalide l'opération avant
+écriture. Aucun remplacement de fichier PCB ni enregistrement automatique.

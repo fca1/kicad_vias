@@ -13,3 +13,33 @@ Utilisateur, en réponse à la demande d'ouverture d'une carte synthétique dist
 
 Utilisateur :
 > est ce que la version nightly de kicad corrige certaines choses au niveau de l'ipc qui serait utile pour la future version de ce plugin avec kicad11 futur ?
+
+
+Suite accessible :
+
+Utilisateur :
+> Recharge le plugin dans KiCad 99 , puis teste le parcours complet depuis le bouton sur la carte de test pour vérifier que tout fonctionne.
+
+Utilisateur, après clarification de la version :
+> Utiliser une nightly 10.99
+
+Résultat du diagnostic : voir STATUS.md, section vérification de la nightly.
+Aucun parcours réussi ne doit être déduit du simple lancement de l'éditeur.
+
+
+Suite accessible — autorisation et compromis :
+
+Utilisateur :
+> go
+
+Utilisateur, après proposition de renommage manuel initial :
+> explique encore, UpdateBoardStackup va t'il evoluer ?
+
+Assistant (résumé, pas transcription) : commande déclarée mais non implémentée,
+ticket officiel 25384, pas de date vérifiée ni garantie pour les noms User.
+
+Utilisateur :
+> ok
+
+Utilisateur :
+> compromis temporaire

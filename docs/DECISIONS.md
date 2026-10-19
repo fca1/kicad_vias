@@ -429,3 +429,34 @@ inclus dans le push de main. Publication/installation effectives à vérifier
 avec HEAD, origin/main et .local/last_install.json après le commit.
 Source : échange courant partiel et code/tests ; aucune transcription complète
 supplémentaire accessible. Historique : 2026-10-19_adaptateur_ipc.md.
+
+
+## 19 octobre 2026 — Vérification de la nightly installée
+
+Demande : recharger puis tester depuis le bouton sur la carte de test ;
+l'utilisateur précise explicitement « Utiliser une nightly 10.99 ».
+Installation trouvée : 10.99.0.2520.g89476220a8, distincte de KiCad 10.0.7.
+Éditeur nightly lancé et version visible vérifiée. Kicad_Via absent de son
+répertoire de plugins. Le paquet ffdeaa9 ne possède pas de plugin.json et son
+lanceur action.py hérite de pcbnew.ActionPlugin : le parcours du bouton n'est
+pas disponible dans le système de plugins IPC de cette nightly.
+Ne pas confondre cette build installée avec master 7d2afb0 examiné précédemment.
+Les DLL Python présentes dans le dossier ne suffisent pas à prouver la présence
+de l'ancienne interface : aucun pcbnew.py trouvé dans l'installation.
+Aucun rechargement réussi, aucune génération ni écriture de carte dans 10.99.
+Le parcours complet demandé reste non validé. Étape nécessaire : porter le
+lanceur et l'interface vers un processus IPC externe, remplacer les replis
+natifs, puis vérifier leur parité sur cette build précise avant test du bouton.
+
+
+## 19 octobre 2026 — Portage externe nightly autorisé
+
+L'utilisateur autorise l'adaptation (« go »), puis accepte explicitement le
+renommage manuel initial des couches comme compromis temporaire. Réalisé en
+code : manifeste et bouton IPC, dialogue Tkinter, service/capture/métriques/
+matérialisation externes, fusion et export Fusion IPC. Le moteur est inchangé.
+54 tests réussis ; parité exacte du plan sur copie réelle et six cas synthétiques.
+Essais réels API génération/fusion Top et Bottom réussis sur carte synthétique.
+Les limites de géométrie et la finalisation des groupes propre à la build 2520
+sont détaillées dans IPC_MIGRATION.md. Le test depuis le bouton est encore à
+faire après le commit d'installation ; aucun résultat GUI réussi n'est annoncé.

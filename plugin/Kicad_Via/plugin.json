@@ -1,0 +1,28 @@
+{
+  "$schema": "https://go.kicad.org/api/schemas/v1",
+  "identifier": "com.github.fca1.kicad_via",
+  "name": "Kicad_Via",
+  "description": "Rep\u00e9rage des vias Top/Bottom par IPC",
+  "runtime": {
+    "type": "python",
+    "min_version": "3.11"
+  },
+  "actions": [
+    {
+      "identifier": "labels",
+      "name": "Kicad_Via",
+      "description": "Labels de vias, grille et tableau Markdown",
+      "show-button": true,
+      "scopes": [
+        "pcb"
+      ],
+      "entrypoint": "external.py",
+      "icons-light": [
+        "icon.png"
+      ],
+      "icons-dark": [
+        "icon_dark.png"
+      ]
+    }
+  ]
+}
