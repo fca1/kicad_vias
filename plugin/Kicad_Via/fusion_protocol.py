@@ -1,5 +1,6 @@
 """Lecture des sources et génération ULP, sans dépendance KiCad."""
 import json
+import math
 from pathlib import Path
 import tempfile
 import re

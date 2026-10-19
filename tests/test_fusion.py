@@ -27,6 +27,15 @@ class FusionTests(unittest.TestCase):
                           y=str(100-p.ToMM(pos.y)),package='TEST',rot='R0')
         self.source=self.root/'source.brd';ET.ElementTree(root).write(self.source,encoding='utf-8')
 
+    def test_shared_source_reader_valid_and_nonfinite(self):
+        from Kicad_Via.fusion_protocol import read_source
+        self.assertEqual(len(read_source(self.source)),2)
+        data=self.source.read_text(encoding='utf-8')
+        root=ET.fromstring(data)
+        root.find('./drawing/board/elements/element').set('x','nan')
+        self.source.write_text(ET.tostring(root,encoding='unicode'),encoding='utf-8')
+        with self.assertRaisesRegex(ValueError,'Coordonnée'):read_source(self.source)
+
     def tearDown(self):
         self.env.stop();self.temp.cleanup()
 
