@@ -528,3 +528,25 @@ fenêtre a été demandée ; prochaine étape : bouton, génération et fusion s
 carte synthétique. Les validations API Top/Bottom restent acquises.
 Aucune sauvegarde ni fermeture de la carte utilisateur. Le renommage manuel
 initial des couches est accepté uniquement comme compromis temporaire.
+
+
+## 19 octobre 2026 — Parcours graphique confirmé avec l’utilisateur
+
+Le clic manuel sur le bouton ouvre Kicad_Via — IPC et la connexion affiche la
+carte synthétique attendue. L’utilisateur a exécuté génération puis fusion Top,
+puis Bottom ; relecture IPC indépendante effectuée après chaque confirmation.
+Top : 3 accès/3 labels, 400 objets sur F.SilkS, groupe complet, textes non miroirs.
+Bottom : 4 accès/4 labels, 411 objets sur B.SilkS, groupe complet, textes miroirs.
+Aucun aperçu résiduel pour les deux faces ; tableaux Markdown distincts présents,
+avec les cinq colonnes prévues et les coordonnées au dixième. Cette validation
+remplace l’état graphique « à vérifier » des entrées précédentes. Les clics
+ont été faits par l’utilisateur, les clics automatisés restant sans effet.
+L’export vers Fusion n’a pas été exécuté dans ce parcours graphique.
+
+Question suivante : exposer une interface de commande du plugin lui-même.
+Le plugin actuel est client IPC de KiCad ; il n’expose pas de serveur de commandes.
+La documentation officielle décrit le lancement des actions déclarées dans
+plugin.json, pas un routage général des requêtes vers les plugins vivants.
+Une entrée locale dédiée (état, génération, fusion, export) est une proposition,
+non implémentée et non autorisée à ce stade. Elle réutiliserait le service existant.
+Référence : https://dev-docs.kicad.org/en/apis-and-binding/ipc-api/for-addon-developers/

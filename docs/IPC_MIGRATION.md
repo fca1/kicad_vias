@@ -164,3 +164,9 @@ Les tableaux entièrement fantômes sans dessin sont identifiés par les UUID de
 vias de la carte dans le registre, sans inventer d'objet graphique caché.
 Une modification de la carte pendant le calcul invalide l'opération avant
 écriture. Aucun remplacement de fichier PCB ni enregistrement automatique.
+
+
+Validation graphique finale : ouverture du bouton et génération/fusion Top et
+Bottom confirmées avec clics utilisateur, puis relecture IPC (400/411 objets,
+3/4 labels, groupes complets, couches et miroirs conformes). Export Fusion GUI
+non exécuté dans cette validation. Voir STATUS.md pour les limites restantes.

@@ -48,3 +48,14 @@ Utilisateur :
 Assistant (résumé de réalisation) : bouton visible après correction de
 l’identifiant interdit ; 55 tests passent. Validation graphique suspendue
 après détection d’interaction utilisateur, attente de disponibilité de la fenêtre.
+
+
+Suite accessible (extrait) :
+Utilisateur, à la question si le dialogue s’ouvre après son clic :
+> s'ouvre
+Utilisateur, après demande de génération et fusion Top :
+> ok
+Utilisateur, après demande de génération et fusion Bottom :
+> ok
+Utilisateur :
+> Et est-ce que le plugin ne devrait pas avoir lui-même une porte d'entrée IPC pour pouvoir communiquer avec lui via KiCAD ? Est-ce qu'ils ont prévu cela ?
