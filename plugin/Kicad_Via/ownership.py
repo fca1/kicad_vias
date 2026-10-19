@@ -60,5 +60,3 @@ def stage_output(path,side,rows,ext):
     fd,name=tempfile.mkstemp(prefix='.kicad_via_',suffix='.tmp',dir=path.parent)
     with os.fdopen(fd,'w',encoding='utf-8',newline='\n') as f: f.write('\n'.join(lines)+'\n')
     return path,Path(name)
-
-

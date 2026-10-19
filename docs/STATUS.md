@@ -502,3 +502,9 @@ Essais réels API génération/fusion Top et Bottom réussis sur carte synthéti
 Les limites de géométrie et la finalisation des groupes propre à la build 2520
 sont détaillées dans IPC_MIGRATION.md. Le test depuis le bouton est encore à
 faire après le commit d'installation ; aucun résultat GUI réussi n'est annoncé.
+
+
+Validation du bouton nightly : premier chargement refusé car le caractère _ dans
+l’identifiant technique est interdit par API_PLUGIN::IsValidIdentifier dans
+89476220a8. Identifiant corrigé en com.github.fca1.kicad-via, nom affiché inchangé.
+Test de régression ajouté ; validation graphique encore en cours.

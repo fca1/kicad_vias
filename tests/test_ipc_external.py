@@ -69,3 +69,10 @@ from Kicad_Via import ipc_capture,ipc_drawing,ipc_service,ipc_fusion
     def test_external_entrypoint_compiles(self):
         path=Path(__file__).resolve().parents[1]/'plugin/Kicad_Via/external.py'
         compile(path.read_text(encoding='utf-8'),str(path),'exec')
+
+    def test_manifest_identifier_accepted_by_nightly(self):
+        import json
+        path=Path(__file__).resolve().parents[1]/'plugin/Kicad_Via/plugin.json'
+        identifier=json.loads(path.read_text(encoding='utf-8'))['identifier']
+        # Validation du chargeur KiCad 89476220a8 (API_PLUGIN::IsValidIdentifier).
+        self.assertRegex(identifier,r'^[a-zA-Z]{2,}(\.([a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]|[a-zA-Z0-9])){2,}$')

@@ -1,6 +1,6 @@
 {
   "$schema": "https://go.kicad.org/api/schemas/v1",
-  "identifier": "com.github.fca1.kicad_via",
+  "identifier": "com.github.fca1.kicad-via",
   "name": "Kicad_Via",
   "description": "Rep\u00e9rage des vias Top/Bottom par IPC",
   "runtime": {
