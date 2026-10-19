@@ -50,7 +50,9 @@ def silhouette(item,layer):
 def text_item(board,text,x,y,size,layer,side):
     it=p.PCB_TEXT(board); it.SetText(text); it.SetLayer(layer)
     it.SetTextSize(vec(size,size)); it.SetTextThickness(p.FromMM(max(.10,size*.16)))
-    it.SetPosition(vec(x,y)); it.SetMirrored(side=='Bottom')
+    # KiCad garde l'orientation des textes User même en Flip View.
+    # Le miroir physique est réservé aux couches liées à une face.
+    it.SetPosition(vec(x,y)); it.SetMirrored(side=='Bottom' and it.IsSideSpecific())
     return it
 
 
@@ -199,22 +201,14 @@ def prepare(board,layer,opt,exclude=(),obstacles_only=False):
                 printed.append(row)
                 break
             if pos: break
-        if pos is None:
-            # La proximité ne dispense jamais de chercher un ovale et un
-            # rappel libres. Elle autorise seulement ce repli après échec
-            # de tous les placements, avec un voisin effectivement imprimé.
-            if opt.omit_nearby:
-                close=[r for r in printed if math.hypot(r['x']-x,r['y']-y)<=opt.proximity]
-                if close: neighbor=min(close,key=lambda r:math.hypot(r['x']-x,r['y']-y))
-            if neighbor is None:
-                raise ValueError(f'Aucune place lisible pour {label} ({row["net"]}). '
-                                 'Réduisez la taille du label ; aucune modification effectuée.')
+        # Un accès sans place reste dans le tableau. Son ancrage et son numéro
+        # sont calculés après tous les placements, même si le visible vient après.
         v=row['via']
         records.append(dict(face=opt.side,repere=label,net=row['net'],case=row['case'],
                             x_mm=round(row['xx'],4),y_mm=round(row['yy'],4),
                             kicad_x_mm=row['x'],kicad_y_mm=row['y'],via_uuid=uid(v),
                             diametre_mm=mm(v.GetWidth(copper)),percage_mm=mm(v.GetDrillValue()),
-                            imprime=neighbor is None,voisin=neighbor['label'] if neighbor else '',
+                            imprime=pos is not None,voisin=neighbor['label'] if neighbor else '',
                             ecart_x_mm=round(row['xx']-neighbor['xx'],4) if neighbor else '',
                             ecart_y_mm=round(row['yy']-neighbor['yy'],4) if neighbor else '',
                             label_xy=pos,rappel=leader_path))

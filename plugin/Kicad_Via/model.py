@@ -8,6 +8,7 @@ class Options:
     side: str = 'Top'
     label_size: float = 0.65
     grid: bool = True
+    # Conservés pour les appels existants ; le repli fantôme est désormais systématique.
     omit_nearby: bool = True
     proximity: float = 3.0
     step: float = 20.0
@@ -61,7 +62,14 @@ def number_unprinted(rows):
             # Cas limite au bord d'une case : tous ses accès sont masqués et
             # leur voisin visible est dans une autre case. Garder le préfixe
             # géographique réel et classer par référence puis distance.
-            if not all_printed:raise ValueError('Un accès masqué doit avoir un label imprimé de référence.')
+            if not all_printed:
+                # Sans aucun visible, aucune distance d'ancrage n'existe :
+                # conserver un ordre spatial stable et ne pas inventer de voisin.
+                ordered=sorted(members,key=lambda r:(r['kicad_x_mm'],r['kicad_y_mm'],r['via_uuid']))
+                for index,row in enumerate(ordered,1):
+                    result.append(dict(row,repere=case+'.'+str(index),voisin='',
+                                       ecart_x_mm='',ecart_y_mm=''))
+                continue
             anchors={r['via_uuid']:min(all_printed,key=lambda a:(distance(r,a),a['repere'])) for r in members}
             ordered=sorted(members,key=lambda r:(anchors[r['via_uuid']]['repere'],distance(r,anchors[r['via_uuid']]),r['via_uuid']))
             for index,row in enumerate(ordered,1):

@@ -83,10 +83,13 @@ class PluginTests(unittest.TestCase):
             self.assertNotIn('Case',text)
             self.assertRegex(text,r'\| -?\d+\.\d \| -?\d+\.\d \|')
         bottom=[it for it in service.layer_objects(self.b,p.User_2) if isinstance(it,p.PCB_TEXT)]
-        self.assertTrue(all(it.IsMirrored() for it in bottom))
+        self.assertTrue(all(not it.IsMirrored() and not it.IsSideSpecific() for it in bottom))
         top_ids=set(data['Top']['preview']['ids']);self.generate('Bottom',p.User_2)
         self.assertEqual(top_ids,set(service.state(self.b)['faces']['Top']['preview']['ids']))
         service.merge(self.b,p.User_2,'Bottom')
+        bottom=[it for it in service.layer_objects(self.b,p.B_SilkS) if isinstance(it,p.PCB_TEXT)]
+        self.assertTrue(bottom)
+        self.assertTrue(all(it.IsMirrored() and it.IsSideSpecific() for it in bottom))
         self.assertEqual(top_ids,set(service.state(self.b)['faces']['Top']['preview']['ids']))
         self.assertTrue(all(i.GetLayer()==p.B_SilkS for i in self.b.GetDrawings()
                             if uid(i) in service.state(self.b)['faces']['Bottom']['merged']['ids']))
@@ -223,11 +226,28 @@ class PluginTests(unittest.TestCase):
         output,staged=service.stage_output(self.root/'fallback.nd','Top',plan['rows'],plan['bounds'])
         text=staged.read_text(encoding='utf-8');staged.unlink()
         self.assertIn('| true |',text);self.assertIn('| false |',text)
-        with self.assertRaisesRegex(ValueError,'Aucune place lisible'):
-            prepare(self.b,p.User_1,Options(omit_nearby=False))
-        # Sans voisin imprimé dans le rayon autorisé, ne pas masquer en silence.
-        with self.assertRaisesRegex(ValueError,'Aucune place lisible'):
-            prepare(self.b,p.User_1,Options(proximity=.5))
+        # Le manque de place ne bloque plus, même sans option ni voisin proche.
+        for opt in (Options(omit_nearby=False),Options(proximity=.5)):
+            plan=prepare(self.b,p.User_1,opt)
+            self.assertFalse(next(r for r in plan['rows'] if r['net']=='N3')['imprime'])
+            self.assertGreater(plan['printed'],0)
+        result=self.generate()
+        self.assertEqual(result['points'],4)
+        self.assertEqual(result['labels'],3)
+
+    def test_all_ghosts_still_produce_table(self):
+        # Bloquer chaque départ, sans rendre les vias inaccessibles par un corps.
+        for via in self.b.GetTracks():
+            pos=via.GetPosition();x=p.ToMM(pos.x);y=p.ToMM(pos.y)
+            mask=p.PCB_SHAPE(self.b);mask.SetShape(p.SHAPE_T_RECT);mask.SetLayer(p.F_Mask)
+            mask.SetStart(vec(x-.5,y-.5));mask.SetEnd(vec(x+.5,y+.5));mask.SetWidth(p.FromMM(.1));self.b.Add(mask)
+        result=service.generate(self.b,p.User_1,Options(grid=False),self.root/'Top.nd')
+        self.assertEqual(result['points'],3);self.assertEqual(result['labels'],0)
+        rows=service.state(self.b)['faces']['Top']['preview']['rows']
+        self.assertTrue(all(not r['imprime'] and not r['voisin'] for r in rows))
+        self.assertEqual((self.root/'Top.nd').read_text(encoding='utf-8').count('| false |'),3)
+        service.generate(self.b,p.User_1,Options(grid=False),self.root/'Top.nd')
+
 
     def test_change_preview_layer(self):
         self.generate();self.generate(layer=p.User_2)
@@ -265,7 +285,7 @@ class PluginTests(unittest.TestCase):
             dialog.side.SetSelection(1);dialog.update_side()
             self.assertTrue(dialog.output.GetPath().endswith('_bottom.nd'))
             self.assertIn('B.SilkS',dialog.merge.GetLabel())
-            self.assertTrue(dialog.grid.GetValue());self.assertTrue(dialog.near.GetValue())
+            self.assertTrue(dialog.grid.GetValue())
             self.assertFalse(dialog.merge.IsEnabled())
             self.assertLessEqual(dialog.GetSize().height,500)
         finally: dialog.Destroy()

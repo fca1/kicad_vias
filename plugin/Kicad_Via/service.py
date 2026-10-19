@@ -29,7 +29,9 @@ def state(board):
             continue
         if owner.get('schema')!=1: raise ValueError('Registre Kicad_Via non reconnu : '+str(path))
         record=owner['record']
-        if not present.intersection(record['ids']): continue
+        # Un tableau entièrement fantôme possède un groupe vide identifié.
+        if not present.intersection(record['ids']) and not (
+                not record['ids'] and record.get('group') in group_ids): continue
         # Annuler/rétablir une fusion déplace les mêmes UUID entre User et Silk.
         # Déduire leur état effectif au lieu de supposer le registre synchronisé
         # avec l'historique natif (qui n'annule pas les fichiers externes).
@@ -264,13 +266,18 @@ def merge(board,layer,side):
         if not obstacles['safe'].covers(shape) or occupied.intersects(shape):
             raise ValueError('Un repère chevauche un obstacle ou la sérigraphie de destination. Ajustez-le avant fusion.')
     removed=None
+    mirrors={uid(it):it.IsMirrored() for it in items if isinstance(it,p.PCB_TEXT)}
     try:
         if old_final: removed=remove_record(board,old_final)
-        for it in items: it.SetLayer(target)
+        for it in items:
+            it.SetLayer(target)
+            if isinstance(it,p.PCB_TEXT): it.SetMirrored(side=='Bottom')
         face['merged']=dict(record,layer=target,source_layer=record['layer'])
         del face['preview']; persist(side,'merged',face['merged'])
     except BaseException:
-        for it in items: it.SetLayer(layer)
+        for it in items:
+            it.SetLayer(layer)
+            if isinstance(it,p.PCB_TEXT): it.SetMirrored(mirrors[uid(it)])
         restore_record(board,removed); raise
     return dict(points=len(record['rows']),labels=sum(r['imprime'] for r in record['rows']),
                 layer=board.GetLayerName(target),output=record['output'])

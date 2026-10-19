@@ -1,3 +1,44 @@
+# État courant — placement partiel et Bottom
+
+## 19 octobre 2026 — Placement partiel et lecture Bottom corrigés
+
+Autorisation explicite après signalement C1.2 : corriger, mémoire, commit,
+push main, réinstaller. Le manque de place ne bloque plus la génération :
+chaque accès sans ovale/rappel libre reste en fantôme (Label imprimé=false),
+sans condition de proximité. Numérotation après tous les placements ; distance
+au visible de la case conservée. Sans aucun visible : ordre spatial stable,
+voisin vide, groupe vide reconnu pour permettre la régénération.
+L'ancienne case de masquage dans le dialogue est supprimée ; les paramètres
+Python historiques restent acceptés sans conditionner ce repli obligatoire.
+
+Cause Bottom établie dans le moteur KiCad 10.0 et par IsSideSpecific natif :
+Flip View conserve le miroir des textes User. Aperçu User désormais non miroir,
+miroir physique appliqué au transfert B.SilkS et sur copie pour l'export Fusion.
+Ne pas appliquer un second miroir à l'aperçu ; régénérer les anciens objets.
+31 tests natifs réussis, dont génération partielle, tout fantôme/régénération,
+orientation Bottom et export préservant la carte. Aucun PCB utilisateur enregistré.
+La vérification visuelle du résultat dans l'éditeur ouvert reste côté utilisateur.
+Source : [échange et preuves](HISTORY/2026-10-19_blocage_top_miroir_bottom.md).
+
+Commit/push et installation depuis archive du commit autorisés ; le manifeste
+.local/last_install.json fournit le SHA et les empreintes vérifiées.
+
+## Historique
+
+# Diagnostic ouvert — essai Top / Bottom
+
+## 19 octobre 2026 — Nouveau signalement Top / Bottom, diagnostic ouvert
+
+L'utilisateur signale une annulation pour manque de place sur Top et des textes
+Bottom en miroir. Le code confirme une annulation globale si un placement échoue
+sans voisin déjà imprimé à moins de 3 mm ; recherche bornée à 10 mm. Le miroir
+Bottom est explicitement programmé pour la lecture depuis le dessous.
+Le via bloquant, son obstacle et le point de vue Bottom ne sont pas établis.
+Message exact et orientation de vue demandés. Aucun correctif décidé ou appliqué.
+Source : [extrait et diagnostic](HISTORY/2026-10-19_blocage_top_miroir_bottom.md).
+
+## État antérieur
+
 # État courant — couches Fusion 360 — 19 octobre 2026
 
 Cause de l'annulation établie : l'ULP cherchait tPlace, absente de la carte Fusion

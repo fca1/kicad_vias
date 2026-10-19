@@ -132,7 +132,7 @@ def arc_points(item):
                        p.FromMM(oy+radius*math.sin(angles[0]+sweep*i/count))) for i in range(count+1)]
 
 
-def strokes(items,transform):
+def strokes(items,transform,side=None):
     result=[]
     def add(a,b,width):
         a,b=transform(a),transform(b)
@@ -141,6 +141,10 @@ def strokes(items,transform):
         if isinstance(item,p.PCB_TEXT):
             # Le moteur KiCad fournit les traits déjà positionnés, tournés et
             # miroités. Aucune substitution par une autre police dans Fusion.
+            # Exporter l'orientation physique sans modifier l'aperçu User.
+            if side is not None:
+                item=p.Cast_to_PCB_TEXT(item.Duplicate())
+                item.SetMirrored(side=='Bottom')
             shape=item.GetEffectiveTextShape()
             if not isinstance(shape,p.SHAPE_COMPOUND):
                 raise ValueError('Utilisez une police vectorielle KiCad pour les labels.')
@@ -166,7 +170,7 @@ def prepare(board,side,source,destination):
     if not record: raise ValueError('Générez d’abord le repérage de cette face.')
     items,_=service.validate_record(board,record,record['layer'] in service.USER_LAYERS)
     elements=read_source(source); transform=alignment(board,elements)
-    wires=strokes(items,transform)
+    wires=strokes(items,transform,side)
     destination=Path(destination).expanduser().resolve()
     if not destination.is_dir(): raise ValueError('Choisissez un dossier de sortie existant.')
     q=lambda s:json.dumps(s,ensure_ascii=True)

@@ -14,7 +14,7 @@ Cliquer sur le bouton **Kicad_Via** et choisir :
   déjà identifiés comme appartenant au plugin sont proposées. La génération
   la renomme obligatoirement **Kicad_Via_TOP** ou **Kicad_Via_BOTTOM**.
 - Nom et emplacement du tableau **.nd** (ou .md), à l'aide du sélecteur.
-- Grille en pointillés de 20 mm et masquage en dernier recours, activés par défaut.
+- Grille en pointillés de 20 mm, activée par défaut.
 
 **Générer / remplacer** retient un seul via découvert et accessible par net,
 en privilégiant les accès dégagés. Le label est dans un ovale, avec un trait
@@ -24,10 +24,10 @@ supplémentaire des obstacles fixes est relâchée au voisinage immédiat du cen
 leurs contours réels restent contrôlés. Le plugin cherche d'abord une place libre pour chaque label,
 y compris si son via est proche d'un autre. Il essaie les positions déportées
 entre 1,5 et 10 mm et un rappel direct ou avec un coude, sans collision.
-Si tous ces placements échouent, l'option **Masquer en dernier recours** permet
-d'omettre le label uniquement lorsqu'un autre accès imprimé se trouve à moins
-de 3 mm ; le tableau conserve cet accès. Sans ce voisin ou avec l'option désactivée,
-l'échec de placement bloque la génération au lieu de masquer silencieusement.
+Si tous ces placements échouent, le via reste dans le tableau avec
+**Label imprimé = false**. Les autres labels sont conservés, sans condition de
+proximité. Si aucun label ne peut être placé, le tableau contient tous les accès
+comme fantômes, classés spatialement sans référence visible inventée.
 Une génération remplace uniquement les UUID précédemment gérés par le plugin.
 
 **Fusionner vers F.SilkS** (Top) ou **B.SilkS** (Bottom) déplace les objets,
@@ -154,3 +154,8 @@ Les sources et limites des échanges archivés sont décrites dans
 [l’historique](docs/HISTORY/2026-10-18_demande_plugin.md).
 Après clonage, activer le hook local avec `git config core.hooksPath .githooks`
 (chemin Python KiCad du poste actuel : `D:/kicad/bin/python.exe`).
+
+Les textes Bottom de la couche utilisateur restent lisibles avec **Flip View**.
+Le miroir physique est appliqué au transfert vers B.SilkS et à l'export Fusion,
+sans modifier l'aperçu lors de l'export. Régénérer les anciens aperçus pour
+actualiser leur orientation.

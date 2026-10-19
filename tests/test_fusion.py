@@ -104,7 +104,8 @@ class FusionTests(unittest.TestCase):
         top=text_item(self.board,'A3.1',20,20,.65,p.User_1,'Top')
         bottom=text_item(self.board,'A3.1',20,20,.65,p.User_1,'Bottom')
         transform=lambda v:(p.ToMM(v.x),-p.ToMM(v.y))
-        a=fusion.strokes([top],transform);b=fusion.strokes([bottom],transform)
+        a=fusion.strokes([top],transform,'Top');b=fusion.strokes([bottom],transform,'Bottom')
+        self.assertFalse(bottom.IsMirrored())
         for first,second in zip(a,b):
             self.assertAlmostEqual(first[0]+second[0],40,places=5)
             self.assertAlmostEqual(first[2]+second[2],40,places=5)
