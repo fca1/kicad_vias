@@ -37,3 +37,10 @@ Les listes et numérotations Top/Bottom sont indépendantes.
 distinguer demandes et réalisations. Ne pas supposer l'accès aux autres chats.
 Le dépôt GitHub est public : ne pas y publier de PCB, registres locaux ou échanges
 confidentiels sans vérifier le périmètre de partage autorisé.
+
+Fusion 360 / Fusion Electronics est le logiciel cible, pour ce projet comme pour
+les autres projets de l'utilisateur. Vérifier les noms de couches dans Fusion :
+SilkscreenTop et SilkscreenBottom sur la version constatée le 19 octobre 2026.
+Une racine XML `eagle` ne désigne pas le logiciel de travail. L'utilisateur a
+autorisé le correctif des couches, la réparation de son ULP avec sauvegarde,
+les tests, la mémoire, le commit, le push main et la réinstallation.

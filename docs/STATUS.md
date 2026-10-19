@@ -1,3 +1,27 @@
+# État courant — couches Fusion 360 — 19 octobre 2026
+
+Cause de l'annulation établie : l'ULP cherchait tPlace, absente de la carte Fusion
+qui contient SilkscreenTop/SilkscreenBottom. Les 88 composants correspondent.
+Correction autorisée : générateur ciblant les noms actuels de Fusion 360,
+résolution de la couche dans l'ULP et commande LAYER avec le nom effectivement
+trouvé ; erreurs de couche séparées des contrôles de composants conservés.
+Réparation des anciens exports erronés par une fonction bornée avec sauvegarde.
+
+30 tests réussis. Copie du fichier utilisateur validée : 88 composants, 1 353
+commandes de traits inchangées et SilkscreenTop présente une fois. En cours :
+commit, installation exacte, réparation du livrable original depuis ce code
+committé puis publication et contrôle du manifeste. Aucun PCB Fusion modifié.
+L'utilisateur pourra relancer la même commande RUN après réparation du fichier.
+L'application du script corrigé dans Fusion reste à valider côté utilisateur.
+
+Règle globale utilisateur enregistrée : Fusion 360 / Fusion Electronics est et
+a toujours été la référence pour tous les projets. Source BRD/ULP/SCR et racine
+XML ne doivent plus être confondues avec un autre environnement de travail.
+Mémoire et historique de cette correction actualisés ; les conversations
+antérieures ne sont toujours couvertes que partiellement.
+
+## États précédents (historiques)
+
 # État courant — centres des vias et fantômes — 18 octobre 2026
 
 Implémenté sur main : trait jusqu'au centre du via, exception locale de masque

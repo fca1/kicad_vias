@@ -49,7 +49,7 @@ les fichiers étrangers. Les coordonnées précises restent dans le registre.
   les objets après réouverture ou sur un autre poste. Pas de simple adoption par nom.
 - `tools/install_plugin.py` : archive du commit, sauvegarde et vérification SHA-256.
 - `tools/adopt_previous.py` : migration bornée sur preuves de l'ancien repérage.
-- `tests/test_plugin.py` : 28 tests natifs, dont interface réelle wxPython.
+- `tests/test_plugin.py` : 30 tests natifs, dont interface réelle wxPython.
 
 KiCad audité : 10.0.7 sous Windows, Python natif avec wxPython 4.3.1 et Shapely
 2.2.0. Utiliser IPC au maximum pour lecture de la carte en mémoire et rechargement ;
@@ -125,6 +125,37 @@ texte dessiné et tableau cohérents, ordre et booléens, sauvegarde puis fusion
 Aucun enregistrement automatique de l'original. Pour actualiser les repères déjà
 créés, utiliser Générer / remplacer après rechargement du plugin.
 Source : [échange et clarification](HISTORY/2026-10-18_centres_et_fantomes.md).
+
+## Correction du 19 octobre 2026 — couches Fusion 360
+
+Cause confirmée : l'ULP fourni cherchait exactement tPlace alors que l'extraction
+courante Fusion contient SilkscreenTop (21) et SilkscreenBottom (22), sans tPlace.
+Le contrôle trouvait zéro couche puis annulait ; le message regroupait en outre
+les erreurs de couche et de nombre de composants. La carte a 88 composants,
+comme l'ULP. Ne pas imputer cette annulation à une autre carte sans preuve.
+
+Autorisation utilisateur obtenue après présentation de ces preuves : corriger
+plugin et ULP existant, tester, mémoire epi-git, commit, push main et réinstallation.
+Le générateur cible uniquement les couches actuelles Fusion 360. L'ULP conserve
+le nom de couche résolu à l'exécution pour LAYER, refuse absence/ambiguïté, et
+préserve les erreurs de composants précédemment constatées. La fonction
+repair_legacy_ulp répare les exports erronés connus du plugin avec sauvegarde
+exacte et publication atomique ; elle n'ajoute pas une cible produit historique.
+
+30 tests réussis, dont Top/Bottom, absence de l'ancien nom dans les nouveaux ULP,
+réparation sans modifier composants/traits, sauvegarde exacte, refus de fichier
+étranger ou déjà corrigé. Copie du fichier fourni vérifiée : 88 composants,
+1 353 commandes de traits inchangées ; SilkscreenTop détectée une fois dans
+l'extraction Fusion récente. L'application du script corrigé dans Fusion reste
+à valider par son exécution manuelle ; aucun PCB Fusion n'a été appliqué par l'agent.
+
+Rappel global demandé le 19 octobre : Fusion 360 a toujours été l'environnement
+utilisateur. Règle ajoutée à `%USERPROFILE%/.codex/AGENTS.md`, puis reprise dans
+les nouvelles consignes utilisateur de ce chat. Les formats BRD/ULP/SCR et la
+racine XML `eagle` ne prouvent pas l'usage d'un ancien logiciel.
+Sources : ULP fourni (lecture locale, non publié), extraction Fusion du 19 octobre
+2026 à 00:06:11 UTC, diagnostic local des couches déjà disponible, documentation
+Autodesk LAYER actuelle, tests et [échange](HISTORY/2026-10-19_couches_fusion360.md).
 
 ## Sources et couverture
 

@@ -31,7 +31,7 @@ class FusionTests(unittest.TestCase):
         self.env.stop();self.temp.cleanup()
 
     def test_export_faces_and_merged_preserves_board(self):
-        for side,layer,dest in [('Top',p.User_1,'tPlace'),('Bottom',p.User_2,'bPlace')]:
+        for side,layer,dest in [('Top',p.User_1,'SilkscreenTop'),('Bottom',p.User_2,'SilkscreenBottom')]:
             service.generate(self.board,layer,Options(side=side),self.root/(side+'.nd'))
             record=service.state(self.board)['faces'][side]['preview']
             self.assertTrue(all('.' in r['repere'] and '-' not in r['repere'] for r in record['rows']))
@@ -39,7 +39,14 @@ class FusionTests(unittest.TestCase):
             result=fusion.prepare(self.board,side,self.source,self.root)
             text=Path(result['path']).read_text(encoding='utf-8')
             self.assertGreater(result['strokes'],len(record['ids']))
-            self.assertIn('LAYER '+dest+';',text)
+            self.assertIn('L.name=="'+dest+'"',text)
+            self.assertEqual(result['layer'],dest)
+            self.assertNotIn('L.name=="tPlace"',text);self.assertNotIn('L.name=="bPlace"',text)
+            self.assertIn('targetLayer=L.name',text)
+            self.assertIn("LAYER '%s';",text)
+            self.assertIn('layers==0 && issue==""',text)
+            self.assertIn('layers>1 && issue==""',text)
+            self.assertNotIn('Carte ou couche cible differente',text)
             self.assertIn('E.footprint.name!=packages[found]',text)
             self.assertLess(text.index('if (issue!="")'),text.index('output(scriptPath'))
             self.assertIn("RUN '",result['command'])
@@ -47,6 +54,34 @@ class FusionTests(unittest.TestCase):
             self.assertEqual(before,after)
             service.merge(self.board,layer,side)
             self.assertEqual(fusion.prepare(self.board,side,self.source,self.root)['strokes'],result['strokes'])
+
+    def test_repair_legacy_layers_preserves_component_and_wire_commands(self):
+        for side,name in [('Top','tPlace'),('Bottom','bPlace')]:
+            path=self.root/(side+'.ulp')
+            preserved=['refs[0]="U1";', 'if (issue!="") { dlgMessageBox(issue); exit(1); }',
+                       '  printf("WIRE 0.12 (1 2) (3 4);\\n");']
+            old='\n'.join(['// Kicad_Via : copie additive des labels et dessins uniquement.',
+                           'int count=0, layers=0; string issue="";',preserved[0],
+                           f'  B.layers(L) if (L.name=="{name}") layers++;',
+                           'if (count!=2 || layers!=1) issue="Carte ou couche cible differente.";',preserved[1],
+                           f'  printf("GRID MM;\\nLAYER {name};\\nSET WIRE_BEND 2;\\nCHANGE STYLE Continuous;\\n");',preserved[2]])+'\n'
+            path.write_text(old,encoding='utf-8');original=path.read_bytes()
+            backup=fusion.repair_legacy_ulp(path)
+            self.assertEqual(backup.read_bytes(),original)
+            text=path.read_text(encoding='utf-8')
+            for line in preserved:self.assertIn(line,text)
+            self.assertIn('count!=2 && issue==""',text)
+            self.assertIn('Silkscreen'+side,text)
+            self.assertIn("LAYER '%s';",text)
+            self.assertEqual(text.count('WIRE 0.12'),1)
+            with self.assertRaises(ValueError):fusion.repair_legacy_ulp(path)
+            self.assertEqual(path.read_text(encoding='utf-8'),text)
+
+    def test_repair_refuses_foreign_ulp_without_changes(self):
+        path=self.root/'other.ulp';path.write_text('exit(0);',encoding='utf-8')
+        with self.assertRaises(ValueError):fusion.repair_legacy_ulp(path)
+        self.assertEqual(path.read_text(encoding='utf-8'),'exit(0);')
+        self.assertEqual(list(self.root.glob('*avant_couches*')),[])
 
     def test_misalignment_refused_before_files(self):
         service.generate(self.board,p.User_1,Options(),self.root/'Top.nd')

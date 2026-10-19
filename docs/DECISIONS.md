@@ -182,3 +182,31 @@ numéros dessinés et tableau, ordre des fantômes et fusion vérifiés. Les sor
 et données de carte restent privées dans .local. Le rechargement à chaud dépend
 encore du canal IPC actuellement détenu par le gestionnaire ; ne pas le déclarer
 réussi sans réponse RAS_OK.
+
+## 19 octobre 2026 — Annulation ULP : couches Fusion 360
+
+Diagnostic avant code : le fichier fourni contient L.name=="tPlace" et LAYER
+tPlace ; l'extraction Fusion de la même carte contient SilkscreenTop et
+SilkscreenBottom, pas tPlace. Le diagnostic local des couches confirme ces noms.
+L'ULP et la carte comptent 88 composants. Cause de couche établie, pas simple
+hypothèse tirée d'un message générique. Autorisation explicite reçue pour corriger
+plugin et livrable existant, tester, mémoire, committer, pousser main et réinstaller.
+
+Une première proposition de compatibilité de noms a été abandonnée après rappel
+utilisateur : tous ses projets utilisent Fusion 360 depuis toujours. Enregistrer
+ce rappel globalement dans .codex/AGENTS.md ; ne plus présenter une ancienne
+version d'EAGLE comme son environnement. Cibler SilkscreenTop/SilkscreenBottom,
+résoudre le nom réel à l'exécution puis l'utiliser dans LAYER. Les références aux
+noms erronés ne restent que dans l'outil de réparation de nos propres exports.
+
+Séparer erreur d'implantation, nombre de composants, absence ou ambiguïté de
+couche. Ne pas remplacer une erreur d'implantation par le message générique de
+couche. Avant correction du livrable utilisateur, sauvegarder ses octets exacts.
+Refuser toute structure inconnue ou déjà corrigée. Garder toutes les coordonnées,
+les références et les 1 353 commandes de traits du fichier fourni à l'identique.
+L'ULP corrigé reste additif et soumis à confirmation d'application dans Fusion.
+
+30 tests réussis (4,002 s). Essai sur copie du livrable et comparaison avec
+l'extraction Fusion récente : SilkscreenTop résolue une fois, 88 composants,
+1 353 traits inchangés, sauvegarde exacte. L'exécution réelle dans Fusion après
+correction n'est pas encore confirmée. Aucun fichier de carte n'est publié.

@@ -72,7 +72,7 @@ même face. Une liste Bottom n'écrase pas une liste Top.
    la carte et le dossier de sortie, puis **Préparer pour Fusion**.
 3. Cliquer **Copier la commande RUN**, coller cette commande dans le PCB cible
    Fusion et la lancer. L'ULP contrôle les composants de la cible avant de proposer
-   l'ajout sur **tPlace** (Top) ou **bPlace** (Bottom).
+   l'ajout sur **SilkscreenTop** (Top) ou **SilkscreenBottom** (Bottom) dans Fusion 360.
 
 Le même parcours que [kicad_plugin_fusion2kicad](https://github.com/fca1/kicad_plugin_fusion2kicad)
 est repris : fichier ULP local, commande RUN visible et copie sur clic uniquement.
@@ -92,9 +92,15 @@ Un dossier neuf conserve chaque livraison. La copie est **additive** : lancer
 une seule fois pour éviter les doublons ; elle ne remplace aucune ancienne
 sérigraphie Fusion et ne touche pas aux pistes, vias, pads ou nets. Les contrôles
 portent sur l'implantation source et cible, pas sur l'ensemble de leurs règles.
-La génération est testée ; l'exécution de l'ULP dans Fusion reste à valider.
+La génération est testée ; l'application de l'ULP corrigé dans Fusion 360 reste
+à valider. Les noms de couches sont contrôlés avant de créer le SCR ; le nom réel
+trouvé est utilisé par `LAYER`. Une absence de couche, une ambiguïté et un nombre
+de composants incorrect sont signalés séparément. Les contrôles d'implantation
+restent actifs. Fusion 360 est le logiciel cible ; BRD/ULP/SCR ne désignent pas
+une ancienne version d'un autre produit.
 Références Autodesk : [RUN](https://help.autodesk.com/cloudhelp/ENU/Fusion-ECAD/files/ECD-CLI-R.htm),
-[UL_BOARD](https://help.autodesk.com/cloudhelp/ENU/Fusion-ECAD/files/ECD-ULP-BOARD.htm).
+[UL_BOARD](https://help.autodesk.com/cloudhelp/ENU/Fusion-ECAD/files/ECD-ULP-BOARD.htm),
+[couches Fusion 360 et commande LAYER](https://help.autodesk.com/cloudhelp/ENU/Fusion-ECAD/files/ECD-CLI-L.htm).
 
 ## Installation et suivi
 
