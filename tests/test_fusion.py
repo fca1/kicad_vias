@@ -50,7 +50,10 @@ class FusionTests(unittest.TestCase):
             self.assertGreater(result['strokes'],len(record['ids']))
             self.assertIn('L.name=="'+dest+'"',text)
             self.assertEqual(result['layer'],dest)
-            self.assertNotIn('L.name=="tPlace"',text);self.assertNotIn('L.name=="bPlace"',text)
+            alias='tPlace' if side=='Top' else 'bPlace'
+            other='bPlace' if side=='Top' else 'tPlace'
+            self.assertIn('L.name=="'+alias+'"',text)
+            self.assertNotIn('L.name=="'+other+'"',text)
             self.assertIn('targetLayer=L.name',text)
             self.assertIn("LAYER '%s';",text)
             self.assertIn('layers==0 && issue==""',text)

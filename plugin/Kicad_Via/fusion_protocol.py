@@ -18,7 +18,10 @@ def layer_code(side):
     """
     if side not in ('Top','Bottom'):raise ValueError('Face invalide.')
     name='SilkscreenTop' if side=='Top' else 'SilkscreenBottom'
-    condition='L.name=='+json.dumps(name)
+    # Fusion expose des noms différents selon le document ; interroger ULP
+    # avant l’écriture, sans créer une couche ni accepter un alias ambigu.
+    alias='tPlace' if side=='Top' else 'bPlace'
+    condition='L.name=='+json.dumps(name)+' || L.name=='+json.dumps(alias)
     lookup='  B.layers(L) if ('+condition+') { layers++; targetLayer=L.name; }'
     guards=[f'if (layers==0 && issue=="") issue="Couche de serigraphie Fusion 360 absente : {name}.";',
             f'if (layers>1 && issue=="") issue="Couche de serigraphie Fusion 360 ambigue : {name}.";']

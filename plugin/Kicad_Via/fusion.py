@@ -13,25 +13,9 @@ from . import service
 from .geometry import mm
 
 
-from .fusion_protocol import export_wires
+from .fusion_protocol import export_wires,layer_code
 
 ULP_STATE='int count=0, layers=0; string issue="";'
-
-
-def layer_code(side):
-    """Résoudre la sérigraphie Fusion 360 dans les couches de la cible.
-
-    Les numéros de couches exportés ne sont pas une preuve de compatibilité
-    avec le moteur actif. Conserver son nom réel pour la commande LAYER.
-    """
-    if side not in ('Top','Bottom'):raise ValueError('Face invalide.')
-    name='SilkscreenTop' if side=='Top' else 'SilkscreenBottom'
-    condition='L.name=='+json.dumps(name)
-    lookup='  B.layers(L) if ('+condition+') { layers++; targetLayer=L.name; }'
-    guards=[f'if (layers==0 && issue=="") issue="Couche de serigraphie Fusion 360 absente : {name}.";',
-            f'if (layers>1 && issue=="") issue="Couche de serigraphie Fusion 360 ambigue : {name}.";']
-    command='  printf("GRID MM;\\nLAYER \'%s\';\\nSET WIRE_BEND 2;\\nCHANGE STYLE Continuous;\\n", targetLayer);'
-    return name,lookup,guards,command
 
 
 def repair_legacy_ulp(path):

@@ -40,7 +40,9 @@ confidentiels sans vérifier le périmètre de partage autorisé.
 
 Fusion 360 / Fusion Electronics est le logiciel cible, pour ce projet comme pour
 les autres projets de l'utilisateur. Vérifier les noms de couches dans Fusion :
-SilkscreenTop et SilkscreenBottom sur la version constatée le 19 octobre 2026.
+Les noms varient selon le document : SilkscreenTop/SilkscreenBottom ou
+tPlace/bPlace (21/22 constatés par ULP le 19 octobre 2026). Résoudre dans
+la carte active, refuser les correspondances ambiguës.
 Une racine XML `eagle` ne désigne pas le logiciel de travail. L'utilisateur a
 autorisé le correctif des couches, la réparation de son ULP avec sauvegarde,
 les tests, la mémoire, le commit, le push main et la réinstallation.
