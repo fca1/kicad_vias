@@ -43,3 +43,8 @@ Utilisateur :
 
 Utilisateur :
 > compromis temporaire
+
+
+Assistant (résumé de réalisation) : bouton visible après correction de
+l’identifiant interdit ; 55 tests passent. Validation graphique suspendue
+après détection d’interaction utilisateur, attente de disponibilité de la fenêtre.

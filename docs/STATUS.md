@@ -508,3 +508,23 @@ Validation du bouton nightly : premier chargement refusé car le caractère _ da
 l’identifiant technique est interdit par API_PLUGIN::IsValidIdentifier dans
 89476220a8. Identifiant corrigé en com.github.fca1.kicad-via, nom affiché inchangé.
 Test de régression ajouté ; validation graphique encore en cours.
+
+
+## 19 octobre 2026 — Installation et validation graphique en cours
+
+55 tests passent après correction du manifeste. Les commits 86f06a4 puis
+ d869773 ont été installés par archive Git sur 10.0 et 10.99 avec contrôle SHA-256.
+Le rechargement IPC retourne RAS_OK dans la nightly 10.99.0-2520 ; le bouton
+via/label apparaît désormais dans la barre d’outils de la carte synthétique.
+L’environnement Python 3.12 créé par KiCad était incomplet (pip seul) : les
+requirements du paquet committé ont été installés avec son propre Python ;
+les imports externes ont été vérifiés, puis les plugins rechargés.
+La cause de cet arrêt initial de préparation de l’environnement reste inconnue.
+
+Le parcours graphique n’est pas encore validé : aucune fenêtre externe observée
+après les tentatives de clic, puis l’outil signale une interaction utilisateur.
+Ne pas assimiler ces tentatives à un lancement réussi. Une disponibilité de la
+fenêtre a été demandée ; prochaine étape : bouton, génération et fusion sur la
+carte synthétique. Les validations API Top/Bottom restent acquises.
+Aucune sauvegarde ni fermeture de la carte utilisateur. Le renommage manuel
+initial des couches est accepté uniquement comme compromis temporaire.
