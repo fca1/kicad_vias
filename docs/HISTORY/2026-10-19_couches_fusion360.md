@@ -75,3 +75,7 @@ Je vais inscrire cette règle dans les consignes globales. Le correctif ciblera 
 La règle est enregistrée dans les consignes globales. Le correctif cible désormais les couches de **Fusion 360**.
 
 Sur la copie de votre ULP, j’ai vérifié la détection de `SilkscreenTop`, les **88 composants** et la conservation des **1 353 traits**. Je passe à l’installation, puis à la correction du fichier que vous lancez.
+
+## Assistant
+
+Votre fichier **`labels_vias.ulp` est corrigé au même chemin**, avec une sauvegarde exacte de l’original. Vous pouvez relancer la même commande `RUN` : il cherchera maintenant `SilkscreenTop` dans Fusion 360. Je termine la publication et la vérification de l’installation.

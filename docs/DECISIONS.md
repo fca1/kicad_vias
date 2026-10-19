@@ -210,3 +210,9 @@ L'ULP corrigé reste additif et soumis à confirmation d'application dans Fusion
 l'extraction Fusion récente : SilkscreenTop résolue une fois, 88 composants,
 1 353 traits inchangés, sauvegarde exacte. L'exécution réelle dans Fusion après
 correction n'est pas encore confirmée. Aucun fichier de carte n'est publié.
+
+Livrable utilisateur effectivement réparé après installation du commit 7cdb491,
+au même chemin. Sauvegarde originale exacte vérifiée ; références/composants et
+1 353 commandes de traits conservés. Le manifeste de réparation reste dans .local,
+avec chemin de sauvegarde et empreintes avant/après. L'utilisateur peut relancer
+sa même commande RUN. Pas de lancement ni d'application automatique à Fusion.

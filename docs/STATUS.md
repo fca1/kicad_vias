@@ -8,10 +8,14 @@ trouvé ; erreurs de couche séparées des contrôles de composants conservés.
 Réparation des anciens exports erronés par une fonction bornée avec sauvegarde.
 
 30 tests réussis. Copie du fichier utilisateur validée : 88 composants, 1 353
-commandes de traits inchangées et SilkscreenTop présente une fois. En cours :
-commit, installation exacte, réparation du livrable original depuis ce code
-committé puis publication et contrôle du manifeste. Aucun PCB Fusion modifié.
-L'utilisateur pourra relancer la même commande RUN après réparation du fichier.
+commandes de traits inchangées et SilkscreenTop présente une fois. Commit
+fonctionnel 7cdb491 installé depuis son archive : dix fichiers vérifiés SHA-256.
+Livrable utilisateur réparé au même chemin depuis le module installé de ce commit,
+avec sauvegarde des octets originaux. Composants, coordonnées et 1 353 commandes
+de traits vérifiés identiques. Manifeste privé : .local/layers_repair_manifest.json.
+Aucun PCB Fusion modifié. L'utilisateur peut relancer la même commande RUN.
+La présente finalisation documentaire est aussi installée depuis son propre
+commit ; le SHA final et les empreintes sont dans .local/last_install.json.
 L'application du script corrigé dans Fusion reste à valider côté utilisateur.
 
 Règle globale utilisateur enregistrée : Fusion 360 / Fusion Electronics est et
