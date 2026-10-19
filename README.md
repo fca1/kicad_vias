@@ -159,3 +159,14 @@ Les textes Bottom de la couche utilisateur restent lisibles avec **Flip View**.
 Le miroir physique est appliqué au transfert vers B.SilkS et à l'export Fusion,
 sans modifier l'aperçu lors de l'export. Régénérer les anciens aperçus pour
 actualiser leur orientation.
+
+## Performances
+
+Les collisions utilisent un index spatial et des géométries préparées pour éviter
+les unions globales après chaque label. Les positions candidates et marges restent
+inchangées. Sur la copie de validation (18 accès, 16 labels), la génération complète
+passe de 7,68 à 1,24 s en médiane sur trois essais, avec un résultat identique.
+Ce gain dépend de la carte ; le chargement et le rafraîchissement graphique sont
+hors mesure. `tools/benchmark_placement.py` compare le placement à un commit Git
+sur une copie, sans enregistrer le PCB ; lancer avec le Python natif KiCad et
+`--help` pour les chemins de carte, registre et rapport.

@@ -9,6 +9,8 @@ import pcbnew as p
 from shapely.geometry import Point,Polygon,LineString,box
 from shapely.ops import unary_union,nearest_points
 from shapely.affinity import translate
+from shapely.strtree import STRtree
+from shapely.prepared import prep
 from .model import coordinates,cell,column,number_unprinted
 
 
@@ -86,6 +88,28 @@ def leader_obstacles(fixed,via_apertures,via_id,solid):
     return unary_union([fixed.difference(local),solid]+[g for key,g in via_apertures.items() if key!=via_id])
 
 
+class CollisionIndex:
+    """Tester une union sans reconstruire ses contours à chaque ajout.
+
+    Intersecter une union équivaut à intersecter au moins un de ses membres,
+    contacts de frontières compris. L'index filtre seulement les boîtes ; les
+    prédicats exacts et toutes les marges restent ceux du placement initial.
+    Les ajouts sont peu nombreux et préparés séparément, sans rebâtir l'index.
+    """
+    def __init__(self,geometries):
+        geometries=list(geometries)
+        self.tree=STRtree(geometries)
+        self.fixed=[prep(g) for g in geometries]
+        self.added=[]
+
+    def add(self,geometry):
+        self.added.append(prep(geometry))
+
+    def intersects(self,geometry):
+        return (any(self.fixed[i].intersects(geometry) for i in self.tree.query(geometry))
+                or any(g.intersects(geometry) for g in self.added))
+
+
 def prepare(board,layer,opt,exclude=(),obstacles_only=False):
     exclude=set(exclude)
     copper=p.F_Cu if opt.side=='Top' else p.B_Cu
@@ -123,9 +147,10 @@ def prepare(board,layer,opt,exclude=(),obstacles_only=False):
     body_union=unary_union(bodies)
     fixed=unary_union(bodies+[g.buffer(.2) for g in apertures]+[g.buffer(.2) for g in silk])
     solid=unary_union(bodies+apertures+silk)
-    occupied=unary_union([fixed]+list(via_apertures.values()))
     if obstacles_only:
+        occupied=unary_union([fixed]+list(via_apertures.values()))
         return dict(occupied=occupied,safe=safe,fixed=fixed,solid=solid,via_apertures=via_apertures)
+    occupied=CollisionIndex([fixed]+list(via_apertures.values()))
     bynet=defaultdict(list)
     for v in vias:
         if not v.GetNetname() or not v.IsOnLayer(copper) or v.IsTented(mask): continue
@@ -164,7 +189,12 @@ def prepare(board,layer,opt,exclude=(),obstacles_only=False):
         x,y=row['x'],row['y']; label=row['label']
         neighbor=None
         pos=None; leader_path=[]
-        route_occupied=unary_union([leader_obstacles(fixed,via_apertures,uid(row['via']),solid)]+protections)
+        # Garder la différence locale exacte de l'ancien calcul : seule
+        # l'union coûteuse disparaît, pas l'exception près du centre du via.
+        via_id=uid(row['via'])
+        route_occupied=CollisionIndex([fixed.difference(via_apertures[via_id]),solid]
+                                     +[g for key,g in via_apertures.items() if key!=via_id]
+                                     +protections)
         width,height=dimensions[row['case']]
         half_height=height/2+.2
         half_width=max(width/2+.25,half_height+.1)
@@ -197,7 +227,7 @@ def prepare(board,layer,opt,exclude=(),obstacles_only=False):
                     leader=line(board,a,b,layer);additions.append(leader)
                     leader_vias[uid(leader)]=uid(row['via'])
                 protected=unary_union([shape.buffer(.2),LineString(path).buffer(.18)])
-                occupied=unary_union([occupied,protected]); protections.append(protected)
+                occupied.add(protected); protections.append(protected)
                 printed.append(row)
                 break
             if pos: break
@@ -214,11 +244,10 @@ def prepare(board,layer,opt,exclude=(),obstacles_only=False):
                             label_xy=pos,rappel=leader_path))
 
     def grid_text(text,x,y):
-        nonlocal occupied
         it=text_item(board,text,x,y,max(.6,opt.label_size),layer,opt.side)
         g=bounds(it).buffer(.15)
         if free(g):
-            additions.append(it); occupied=unary_union([occupied,g]); return True
+            additions.append(it); occupied.add(g); return True
         return False
 
     if opt.grid:
