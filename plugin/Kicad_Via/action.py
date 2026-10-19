@@ -188,13 +188,8 @@ class KicadVia(p.ActionPlugin):
             if dialog.ShowModal()!=wx.ID_OK: return
             mode,layer,opt,path=dialog.mode,dialog.chosen_layer,dialog.options,dialog.chosen_output
             dialog.Destroy(); dialog=None
-            # Les modifications restent dans le callback ActionPlugin, pour
-            # bénéficier de la gestion native de l'historique des actions.
-            with wx.BusyCursor():
-                result=service.generate(board,layer,opt,path) if mode=='generate' else service.merge(board,layer,opt.side)
-            p.Refresh()
-            wx.MessageBox(f"{result['points']} accès, {result['labels']} labels — {result['layer']}\n"
-                          f"Tableau : {result['output']}", 'Kicad_Via',wx.OK|wx.ICON_INFORMATION,parent=parent)
+            from .ipc_controller import start
+            start(board,parent,mode,layer,opt,path)
         except Exception as error:
             # Le texte destiné à l'utilisateur reste concret ; la trace est
             # conservée séparément pour diagnostiquer un éventuel défaut.

@@ -1,6 +1,6 @@
 # Kicad_Via
 
-Plugin natif de l'éditeur PCB **KiCad 10.0**, avec bouton de bandeau représentant
+Plugin hybride natif/IPC de l'éditeur PCB **KiCad 10.0**, avec bouton de bandeau représentant
 un via et son drapeau. Génération de repères d'accès de test, puis fusion
 facultative sur la sérigraphie. Le routage et le masque de soudure sont conservés.
 
@@ -52,8 +52,8 @@ Les colonnes continuent après Z : AA, AB…
 
 La grille est vue de la face sélectionnée : X à droite, Y vers le haut ;
 origine au coin inférieur gauche de l'enveloppe Edge.Cuts de cette vue.
-Pour Bottom, X est inversé et les textes sont miroités dans le fichier KiCad
-afin d'être lisibles depuis le dessous. Un repère C2.1 peut exister sur chaque
+Pour Bottom, X est inversé ; les textes User restent non miroités pour Flip View.
+Le miroir est appliqué au transfert vers B.SilkS et à l’export Fusion. Un repère C2.1 peut exister sur chaque
 face : son tableau Top ou Bottom l'identifie sans ambiguïté.
 
 Le tableau comporte cinq colonnes : **Repère, Net, Label imprimé, X (mm), Y (mm)**.
@@ -116,14 +116,17 @@ version déjà importée, sans redémarrer ni enregistrer la carte.
 Python natif KiCad requis avec wxPython et Shapely, présents sur l'installation
 auditée (KiCad 10.0.7, wxPython 4.3.1, Shapely 2.2.0).
 
-L'API native est nécessaire au renommage des couches, non exposé par IPC
-dans la version installée. IPC sert aux captures de la carte ouverte pendant la mise au point.
-L'action `common.API.pluginsReload` recharge les plugins IPC, pas ce plugin
-natif SWIG. Utiliser le bouton de rechargement dans les préférences des plugins
-de l'éditeur PCB pour recharger Kicad_Via sans fermer la carte.
-Le moteur de placement est maintenant indépendant de pcbnew/wx : instantané
-neutre en entrée, plan de dessins en sortie. L'adaptateur natif conserve la capture,
-les métriques et la création des objets ; le transport IPC reste à implémenter.
+Activer **API enabled** dans KiCad. Les dessins sont créés, mis à jour et
+supprimés par IPC, dans un fil séparé pour laisser fonctionner la boucle GUI.
+Le moteur de placement reste indépendant des API. Le natif assure encore la
+capture géométrique exacte, les métriques, les noms des couches, la création
+finale du groupe et l'export des traits de police Fusion.
+Le groupe est finalisé après la transaction IPC : cette étape native n'est pas
+incluse dans son undo. Le tableau et le registre restent externes à l'undo PCB.
+Les dépendances IPC épinglées sont installées dans un dossier Python isolé par
+l'installateur ; la version livrée cible KiCad 10, pas encore KiCad 11.
+L'action `common.API.pluginsReload` ne recharge pas le lanceur SWIG : utiliser
+le rechargement des plugins dans les préférences de l'éditeur, sans fermer la carte.
 Voir [la préparation IPC](docs/IPC_MIGRATION.md).
 
 La propriété des objets est conservée dans

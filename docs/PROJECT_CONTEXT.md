@@ -361,3 +361,32 @@ ipc_native.py du travail parallèle sont exclus de notre commit ciblé. Aucun pu
 initié ici ; le chat de migration est informé pour sa publication finale.
 Installation par le hook post-commit, vérification exacte dans .local/last_install.json.
 Le rechargement dans l'éditeur ouvert reste à effectuer ; aucun redémarrage imposé.
+
+
+## 19 octobre 2026 — Adaptateur IPC opérationnel sur KiCad 10
+
+Demande explicite : poursuivre IPC sans changer le placement, mémoire epi-git,
+commit, push main et réinstallation. Réalisé : écritures de dessins par lots,
+lecture de contrôle, couches actives/visibles, transactions, coordinateur réseau
+hors GUI et contrôle de chaque statut IPC. Les noms de couches et la création
+finale des groupes restent natifs, comme la capture/métrique exacte et Fusion.
+Voir docs/IPC_MIGRATION.md pour les limites, notamment le groupe créé après
+push et donc hors undo IPC. Il s'agit d'un hybride KiCad 10, pas encore d'un
+plugin autonome compatible KiCad 11.
+
+Validation : 47 tests réussis ; comparaison stricte au placement d0d1477 sur
+copie réelle (18 accès/16 labels) ; créations Top/Bottom, remplacement, fusion
+Bottom et annulation IPC réels sur carte synthétique séparée. Géométrie relue
+exacte : 400 dessins Top et 411 Bottom. Groupe natif validé sur copie relue ;
+parcours GUI complet à tester après rechargement. Aucune écriture sur le PCB
+utilisateur. Dépendances IPC épinglées et installation depuis archive Git.
+
+Question nightly ajoutée : le code master officiel du 19 octobre corrige la
+résolution des membres de groupe dans la transaction, expose l'enveloppe
+Edge.Cuts et FocusOnItems. Analyse de code uniquement, aucune nightly installée
+ou testée. SWIG déjà retiré des nightlies : prévoir un lanceur externe et finir
+les replis. Le correctif Markdown fb30f9f du travail parallèle est préservé et
+inclus dans le push de main. Publication/installation effectives à vérifier
+avec HEAD, origin/main et .local/last_install.json après le commit.
+Source : échange courant partiel et code/tests ; aucune transcription complète
+supplémentaire accessible. Historique : 2026-10-19_adaptateur_ipc.md.

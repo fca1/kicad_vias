@@ -1,5 +1,7 @@
 """Installation exacte d'un commit : archive Git, sauvegarde et contrôle SHA-256."""
 import argparse
+import importlib.metadata
+import sys
 import hashlib
 import io
 import json
@@ -31,6 +33,20 @@ def install(ref='HEAD'):
     (stage/'_build.json').write_text(json.dumps(build,indent=2),encoding='utf-8')
     for required in ('__init__.py','action.py','geometry.py','placement.py','board_data.py','native_adapter.py','service.py','model.py','fusion.py','icon.png','icon_dark.png'):
         if not (stage/required).is_file(): raise ValueError('Paquet incomplet : '+required)
+    requirements=stage/'ipc-requirements.txt'
+    if requirements.exists():
+        dependencies=Path.home()/'AppData/Local/Kicad_Via/ipc-python'
+        normalize=lambda name:name.lower().replace('_','-')
+        installed={normalize(d.metadata['Name']):d.version
+                   for d in importlib.metadata.distributions(path=[str(dependencies)])}
+        required=dict(line.split('==') for line in requirements.read_text(encoding='utf-8').splitlines() if line)
+        if any(installed.get(normalize(name))!=version for name,version in required.items()):
+            subprocess.run([sys.executable,'-m','pip','install','--upgrade','--target',str(dependencies),
+                            '-r',str(requirements)],check=True)
+        # Vérifier les extensions binaires dans le même Python que le plugin.
+        subprocess.run([sys.executable,'-c',
+                        'import sys;sys.path.insert(0,sys.argv[1]);import kipy,pynng,google.protobuf',
+                        str(dependencies)],check=True)
     expected={str(f.relative_to(stage)):hashlib.sha256(f.read_bytes()).hexdigest() for f in stage.rglob('*') if f.is_file()}
     target=TARGET.resolve(); parent=(Path.home()/'Documents/KiCad/10.0/3rdparty/plugins').resolve()
     if target.parent!=parent or target.name!='Kicad_Via': raise ValueError('Destination inattendue.')
