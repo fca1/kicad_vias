@@ -1,6 +1,7 @@
 """Propriété des couches, régénération, fusion et export du tableau .md."""
 import json
 import os
+import string
 from pathlib import Path
 import tempfile
 import pcbnew as p
@@ -137,14 +138,19 @@ def stage_output(path,side,rows,ext):
                 or text.startswith('\n'.join(header)+'\n')):
             raise ValueError('Ce fichier ne contient pas un tableau Kicad_Via de cette face. Choisissez un autre nom.')
     if not path.parent.is_dir(): raise ValueError('Le dossier de sortie doit exister.')
-    def escape(value):
-        return str(value).replace('|','\\|').replace('\n',' ').replace('\r',' ')
+    def escape(value,literal=False):
+        # Les noms de nets sont du texte littéral : Markdig interprète notamment
+        # {CMD_RESET} comme des attributs et peut masquer le nom après le tilde.
+        value=str(value).replace('\n',' ').replace('\r',' ')
+        if literal:
+            return ''.join('\\'+c if c in string.punctuation else c for c in value)
+        return value.replace('|','\\|')
     lines=header
     for r in rows:
         # Le tableau sert au repérage visuel ; les valeurs précises et UUID
         # restent dans le registre interne pour les reprises du plugin.
         values=[r['repere'],r['net'],'true' if r['imprime'] else 'false',f"{r['x_mm']:.1f}",f"{r['y_mm']:.1f}"]
-        lines.append('| '+' | '.join(escape(v) for v in values)+' |')
+        lines.append('| '+' | '.join(escape(v,i==1) for i,v in enumerate(values))+' |')
     fd,name=tempfile.mkstemp(prefix='.kicad_via_',suffix='.tmp',dir=path.parent)
     with os.fdopen(fd,'w',encoding='utf-8',newline='\n') as f: f.write('\n'.join(lines)+'\n')
     return path,Path(name)
