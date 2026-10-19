@@ -32,7 +32,7 @@ class FusionTests(unittest.TestCase):
 
     def test_export_faces_and_merged_preserves_board(self):
         for side,layer,dest in [('Top',p.User_1,'SilkscreenTop'),('Bottom',p.User_2,'SilkscreenBottom')]:
-            service.generate(self.board,layer,Options(side=side),self.root/(side+'.nd'))
+            service.generate(self.board,layer,Options(side=side),self.root/(side+'.md'))
             record=service.state(self.board)['faces'][side]['preview']
             self.assertTrue(all('.' in r['repere'] and '-' not in r['repere'] for r in record['rows']))
             before={uid(i):(i.GetLayer(),i.GetPosition().x,i.GetPosition().y) for i in service.all_objects(self.board)}
@@ -84,7 +84,7 @@ class FusionTests(unittest.TestCase):
         self.assertEqual(list(self.root.glob('*avant_couches*')),[])
 
     def test_misalignment_refused_before_files(self):
-        service.generate(self.board,p.User_1,Options(),self.root/'Top.nd')
+        service.generate(self.board,p.User_1,Options(),self.root/'Top.md')
         fp=next(fp for fp in self.board.GetFootprints() if fp.GetReference()=='U2')
         fp.SetPosition(vec(81,70))
         with self.assertRaisesRegex(ValueError,'alignement refusé'):
@@ -95,7 +95,7 @@ class FusionTests(unittest.TestCase):
         archive=self.root/'source.fbrd'
         with zipfile.ZipFile(archive,'w') as z:z.write(self.source,'nested/source.brd')
         self.assertEqual(len(fusion.read_source(archive)),2)
-        service.generate(self.board,p.User_1,Options(),self.root/'Top.nd')
+        service.generate(self.board,p.User_1,Options(),self.root/'Top.md')
         self.board.Add(text_item(self.board,'étranger',10,10,1,p.User_1,'Top'))
         with self.assertRaises(ValueError):fusion.prepare(self.board,'Top',archive,self.root)
 
@@ -123,7 +123,7 @@ class FusionTests(unittest.TestCase):
         import wx
         from Kicad_Via.action import FusionDialog
         app=wx.GetApp() or wx.App(False)
-        service.generate(self.board,p.User_1,Options(),self.root/'Top.nd')
+        service.generate(self.board,p.User_1,Options(),self.root/'Top.md')
         dialog=FusionDialog(None,self.board,'Top',str(self.root))
         try:
             self.assertFalse(dialog.copy.IsEnabled())

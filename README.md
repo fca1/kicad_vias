@@ -13,7 +13,7 @@ Cliquer sur le bouton **Kicad_Via** et choisir :
 - Couche utilisateur : seules les couches libres ou contenant les objets
   déjà identifiés comme appartenant au plugin sont proposées. La génération
   la renomme obligatoirement **Kicad_Via_TOP** ou **Kicad_Via_BOTTOM**.
-- Nom et emplacement du tableau **.nd** (ou .md), à l'aide du sélecteur.
+- Nom et emplacement du tableau **.md**, à l'aide du sélecteur.
 - Grille en pointillés de 20 mm, activée par défaut.
 
 **Générer / remplacer** retient un seul via découvert et accessible par net,
@@ -117,8 +117,14 @@ Python natif KiCad requis avec wxPython et Shapely, présents sur l'installation
 auditée (KiCad 10.0.7, wxPython 4.3.1, Shapely 2.2.0).
 
 L'API native est nécessaire au renommage des couches, non exposé par IPC
-dans la version installée. IPC sert aux captures de la carte ouverte et au
-rechargement des plugins pendant la mise au point ; aucun export manuel requis.
+dans la version installée. IPC sert aux captures de la carte ouverte pendant la mise au point.
+L'action `common.API.pluginsReload` recharge les plugins IPC, pas ce plugin
+natif SWIG. Utiliser le bouton de rechargement dans les préférences des plugins
+de l'éditeur PCB pour recharger Kicad_Via sans fermer la carte.
+Le moteur de placement est maintenant indépendant de pcbnew/wx : instantané
+neutre en entrée, plan de dessins en sortie. L'adaptateur natif conserve la capture,
+les métriques et la création des objets ; le transport IPC reste à implémenter.
+Voir [la préparation IPC](docs/IPC_MIGRATION.md).
 
 La propriété des objets est conservée dans
 `%LOCALAPPDATA%/Kicad_Via/ownership`, par UUID de groupe et de graphismes.
@@ -170,3 +176,6 @@ Ce gain dépend de la carte ; le chargement et le rafraîchissement graphique so
 hors mesure. `tools/benchmark_placement.py` compare le placement à un commit Git
 sur une copie, sans enregistrer le PCB ; lancer avec le Python natif KiCad et
 `--help` pour les chemins de carte, registre et rapport.
+
+Les anciens chemins `.nd` mémorisés sont convertis en `.md` lors de la prochaine
+génération, en conservant le fichier `.nd` original.

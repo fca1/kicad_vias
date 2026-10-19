@@ -1,11 +1,11 @@
-"""Propriété des couches, régénération, fusion et export du tableau .nd."""
+"""Propriété des couches, régénération, fusion et export du tableau .md."""
 import json
 import os
 from pathlib import Path
 import tempfile
 import pcbnew as p
 from .geometry import prepare,uid,polygons,bounds,leader_obstacles
-from .model import Options
+from .model import Options,markdown_path
 
 USER_LAYERS=[getattr(p,'User_'+str(i)) for i in range(1,46) if hasattr(p,'User_'+str(i))]
 
@@ -121,13 +121,13 @@ def stage_output(path,side,rows,ext):
     Le fichier existant doit être un tableau produit par le plugin pour cette
     face : une liste Bottom ne remplace jamais une liste Top par mégarde.
     """
-    path=Path(path).expanduser().resolve()
+    path=markdown_path(path).expanduser().resolve()
     header=[f'# {side}','','| Repère | Net | Label imprimé | X (mm) | Y (mm) |',
             '| --- | --- | --- | ---: | ---: |']
     previous_header=[f'# {side}','','| Repère | Net | X (mm) | Y (mm) |',
                      '| --- | --- | ---: | ---: |']
-    if path.suffix.lower() not in ('.nd','.md'):
-        raise ValueError('Le tableau doit avoir une extension .nd ou .md.')
+    if path.suffix.lower()!='.md':
+        raise ValueError('Le tableau doit avoir une extension .md.')
     if path.exists():
         text=path.read_text(encoding='utf-8-sig')
         # Reconnaître aussi l'ancien format pour permettre sa simplification,

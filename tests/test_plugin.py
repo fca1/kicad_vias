@@ -40,7 +40,28 @@ class PluginTests(unittest.TestCase):
     def tearDown(self): self.env.stop();self.temp.cleanup()
 
     def generate(self,side='Top',layer=p.User_1):
-        return service.generate(self.b,layer,Options(side=side),self.root/(side+'.nd'))
+        return service.generate(self.b,layer,Options(side=side),self.root/(side+'.md'))
+
+    def test_old_output_path_migrates_without_touching_old_file(self):
+        old=self.root/'Top.nd';old.write_text('Ancien fichier conservé',encoding='utf-8')
+        result=service.generate(self.b,p.User_1,Options(),old)
+        self.assertEqual(Path(result['output']),self.root/'Top.md')
+        self.assertEqual(old.read_text(encoding='utf-8'),'Ancien fichier conservé')
+        # Le contrôle de destination s'applique aussi après normalisation.
+        (self.root/'Top.md').write_text('Document étranger',encoding='utf-8')
+        with self.assertRaises(ValueError):service.generate(self.b,p.User_1,Options(),old)
+
+    def test_text_metrics_match_native_translations(self):
+        from Kicad_Via import native_adapter as adapter
+        for side in ('Top','Bottom'):
+            opt=Options(side=side)
+            snapshot=adapter.capture(self.b,opt)
+            chosen=adapter.choose(snapshot,opt)
+            metrics=adapter.measure_texts(self.b,p.User_1,snapshot,chosen,opt)
+            for text,size in metrics.boxes:
+                for x,y in ((0,0),(12.123456789,7.9999999),(-12.123456789,-7.9999999)):
+                    it=adapter.text_item(self.b,text,x,y,size,p.User_1,side)
+                    self.assertEqual(metrics.bounds(text,x,y,size).bounds,adapter.bounds(it).bounds)
 
     def test_coordinates(self):
         self.assertEqual([column(i) for i in (0,25,26,27,51,52)],['A','Z','AA','AB','AZ','BA'])
@@ -77,7 +98,7 @@ class PluginTests(unittest.TestCase):
         data=service.state(self.b)['faces']
         for side in ('Top','Bottom'):
             self.assertTrue(all(r['repere'].endswith('.1') for r in data[side]['preview']['rows']))
-            text=(self.root/(side+'.nd')).read_text(encoding='utf-8')
+            text=(self.root/(side+'.md')).read_text(encoding='utf-8')
             self.assertTrue(text.startswith('# '+side+'\n\n| Repère | Net | Label imprimé | X (mm) | Y (mm) |\n'))
             self.assertIn('| true |',text)
             self.assertNotIn('Case',text)
@@ -96,11 +117,11 @@ class PluginTests(unittest.TestCase):
 
     def test_same_file_other_side_refused(self):
         self.generate()
-        with self.assertRaises(ValueError): service.generate(self.b,p.User_2,Options(side='Bottom'),self.root/'Top.nd')
+        with self.assertRaises(ValueError): service.generate(self.b,p.User_2,Options(side='Bottom'),self.root/'Top.md')
         self.assertFalse(service.layer_objects(self.b,p.User_2))
 
     def test_arbitrary_output_refused_before_mutation(self):
-        output=self.root/'notes.nd';output.write_text('Mes notes',encoding='utf-8')
+        output=self.root/'notes.md';output.write_text('Mes notes',encoding='utf-8')
         with self.assertRaises(ValueError): service.generate(self.b,p.User_1,Options(),output)
         self.assertFalse(service.layer_objects(self.b,p.User_1))
         self.assertEqual(output.read_text(encoding='utf-8'),'Mes notes')
@@ -223,7 +244,7 @@ class PluginTests(unittest.TestCase):
         self.assertIsNone(rows['N3']['label_xy'])
         self.assertEqual(rows['N3']['rappel'],[])
         self.assertEqual(rows['N3']['voisin'],rows['NEAR_N3']['repere'])
-        output,staged=service.stage_output(self.root/'fallback.nd','Top',plan['rows'],plan['bounds'])
+        output,staged=service.stage_output(self.root/'fallback.md','Top',plan['rows'],plan['bounds'])
         text=staged.read_text(encoding='utf-8');staged.unlink()
         self.assertIn('| true |',text);self.assertIn('| false |',text)
         # Le manque de place ne bloque plus, même sans option ni voisin proche.
@@ -241,12 +262,12 @@ class PluginTests(unittest.TestCase):
             pos=via.GetPosition();x=p.ToMM(pos.x);y=p.ToMM(pos.y)
             mask=p.PCB_SHAPE(self.b);mask.SetShape(p.SHAPE_T_RECT);mask.SetLayer(p.F_Mask)
             mask.SetStart(vec(x-.5,y-.5));mask.SetEnd(vec(x+.5,y+.5));mask.SetWidth(p.FromMM(.1));self.b.Add(mask)
-        result=service.generate(self.b,p.User_1,Options(grid=False),self.root/'Top.nd')
+        result=service.generate(self.b,p.User_1,Options(grid=False),self.root/'Top.md')
         self.assertEqual(result['points'],3);self.assertEqual(result['labels'],0)
         rows=service.state(self.b)['faces']['Top']['preview']['rows']
         self.assertTrue(all(not r['imprime'] and not r['voisin'] for r in rows))
-        self.assertEqual((self.root/'Top.nd').read_text(encoding='utf-8').count('| false |'),3)
-        service.generate(self.b,p.User_1,Options(grid=False),self.root/'Top.nd')
+        self.assertEqual((self.root/'Top.md').read_text(encoding='utf-8').count('| false |'),3)
+        service.generate(self.b,p.User_1,Options(grid=False),self.root/'Top.md')
 
 
     def test_change_preview_layer(self):
@@ -280,10 +301,10 @@ class PluginTests(unittest.TestCase):
         dialog=ViaDialog(None,self.b)
         try:
             self.assertEqual(dialog.size.GetValue(),.65)
-            self.assertTrue(dialog.output.GetPath().endswith('_top.nd'))
+            self.assertTrue(dialog.output.GetPath().endswith('_top.md'))
             self.assertIn('F.SilkS',dialog.merge.GetLabel())
             dialog.side.SetSelection(1);dialog.update_side()
-            self.assertTrue(dialog.output.GetPath().endswith('_bottom.nd'))
+            self.assertTrue(dialog.output.GetPath().endswith('_bottom.md'))
             self.assertIn('B.SilkS',dialog.merge.GetLabel())
             self.assertTrue(dialog.grid.GetValue())
             self.assertFalse(dialog.merge.IsEnabled())

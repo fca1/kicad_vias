@@ -4,7 +4,7 @@ import json
 import traceback
 import pcbnew as p
 import wx
-from .model import Options
+from .model import Options,markdown_path
 from . import service
 from . import fusion
 
@@ -92,7 +92,7 @@ class ViaDialog(wx.Dialog):
         self.layer=wx.Choice(self); grid.Add(self.layer,1,wx.EXPAND)
         grid.Add(wx.StaticText(self,label='Tableau de sortie'),0,wx.ALIGN_CENTER_VERTICAL)
         self.output=wx.FilePickerCtrl(self,message='Choisir le tableau de correspondance',
-                                     wildcard='Tableau (*.nd)|*.nd|Markdown (*.md)|*.md',
+                                     wildcard='Markdown (*.md)|*.md',
                                      style=wx.FLP_SAVE|wx.FLP_USE_TEXTCTRL)
         grid.Add(self.output,1,wx.EXPAND)
         outer.Add(grid,0,wx.EXPAND|wx.LEFT|wx.RIGHT|wx.BOTTOM,12)
@@ -134,10 +134,10 @@ class ViaDialog(wx.Dialog):
         if self.layers:
             self.layer.SetSelection(self.layers.index(current['layer']) if current.get('layer') in self.layers else 0)
         filename=Path(self.board.GetFileName()) if self.board.GetFileName() else Path.home()/'carte.kicad_pcb'
-        default=filename.with_name(filename.stem+'_vias_'+side.lower()+'.nd')
+        default=filename.with_name(filename.stem+'_vias_'+side.lower()+'.md')
         face=data['faces'].get(side,{})
         previous=face.get('preview',face.get('merged',{})).get('output',str(default))
-        self.output.SetPath(self.outputs.get(side,previous))
+        self.output.SetPath(str(markdown_path(self.outputs.get(side,previous))))
         self.merge.SetLabel('Fusionner vers '+('F.SilkS' if side=='Top' else 'B.SilkS'))
         self.refresh_actions()
         self.Layout()

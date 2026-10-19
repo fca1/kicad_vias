@@ -1,3 +1,65 @@
+# État courant — préparation IPC et .md
+
+## 19 octobre 2026 — Moteur indépendant et sorties Markdown
+
+Autorisation : préparer IPC sans changer le résultat, tests, mémoire, commit,
+push main et installation ; remplacer .nd par .md. Réalisé : board_data fournit
+le contrat neutre, placement calcule sans pcbnew/wx/kipy, native_adapter capture,
+mesure et matérialise le plan. geometry reste une façade de compatibilité.
+Le paquet s'importe hors KiCad ; les appels natifs sont aux frontières de carte,
+police et application des modifications, plus dans le moteur de placement.
+Le plugin est encore natif : le transport IPC complet reste à implémenter et
+valider, notamment renommage, contours, métriques, transactions et propriété.
+Inventaire de l'interface kipy effectué sans modifier le document ouvert.
+
+36 tests réussis (4,673 s). Test pur avec interdiction d'import des API/GUI ;
+parité des métriques aux coordonnées fractionnaires ; anciens .nd conservés et
+contrôle d'écrasement .md. Comparaisons exactes à d0d1477 sur copie réelle Top
+avec/sans grille et six cas synthétiques Top/Bottom (0,4/0,65/1,2 mm), tous
+identiques. Calcul réel Top ~1,03 s ; 18 accès/16 labels. Aucun PCB original
+modifié. Les tableaux futurs et chemins mémorisés utilisent .md, sans effacer
+les .nd existants. Registre mis à jour avec le nouveau chemin à la génération.
+
+Détails et limites : [architecture IPC](IPC_MIGRATION.md).
+Sources : [échange](HISTORY/2026-10-19_preparation_ipc.md), code, tests,
+.local/benchmark_ipc.json (rapport privé). Installation exacte depuis commit
+par le hook ; SHA et empreintes dans .local/last_install.json. Rechargement
+natif via préférences, pas common.API.pluginsReload.
+
+## Historique
+
+# Rechargement natif à confirmer — orientation IPC
+
+## 19 octobre 2026 — Audit du rechargement et trajectoire IPC
+
+Demande : recharger par IPC sans fermer la carte et privilégier IPC pour préparer
+l'abandon de l'API native actuelle. Version répondant : KiCad 10.0.7.
+Premier appel common.API.pluginsReload refusé Busy ; après fermeture des boîtes
+par l'utilisateur, réponse RAS_OK. Cela ne prouve PAS le rechargement Kicad_Via.
+Audit source KiCad branche 10.0 : COMMON_CONTROL::ReloadPlugins appelle seulement
+API_PLUGIN_MANAGER::ReloadPlugins ; le bouton des préférences Action Plugins
+appelle aussi SCRIPTING_TOOL::ReloadPlugins. Correction des affirmations
+antérieures : cette action IPC ne recharge pas le plugin natif SWIG actuel.
+Aucun PCB fermé ou enregistré. Le rechargement natif reste à faire par le bouton
+des préférences de l'éditeur, sans fermer la carte.
+
+Le plugin n'utilise pas IPC au maximum : aucun import kipy dans le paquet ;
+action, service, geometry et fusion dépendent de pcbnew. IPC sert aux opérations
+externes de mise au point. Le renommage de couches était une limite observée,
+mais ne justifie pas à lui seul tous ces couplages. Orientation à préparer :
+modèle de données indépendant, calcul Shapely indépendant de pcbnew, adaptateur
+KiCad pour lectures/écritures groupées et transactions, plugin IPC externe avec
+plugin.json ; inventaire précis des capacités sur chaque version, repli natif
+borné aux fonctions manquantes. Aucune migration de code entreprise ici.
+Ne pas supposer la disponibilité future de chaque méthode ni une date de retrait.
+
+Sources consultées :
+- https://dev-docs.kicad.org/en/apis-and-binding/ipc-api/for-addon-developers/
+- https://github.com/KiCad/kicad-source-mirror/blob/10.0/common/tool/common_control.cpp
+- https://github.com/KiCad/kicad-source-mirror/blob/10.0/pcbnew/dialogs/panel_pcbnew_action_plugins.cpp
+
+## Historique
+
 # État courant — génération optimisée
 
 ## 19 octobre 2026 — Optimisation mesurée et placement préservé

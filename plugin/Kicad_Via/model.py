@@ -98,3 +98,10 @@ def number_unprinted(rows):
     printed_names={r['via_uuid']:r['repere'] for r in result if r['imprime']}
     for row,anchor_id in external_references:row['voisin']=printed_names[anchor_id]
     return result
+
+
+def markdown_path(path):
+    """Migrer les chemins mémorisés .nd sans déplacer ni effacer l'ancien fichier."""
+    from pathlib import Path
+    path=Path(path)
+    return path.with_suffix('.md') if path.suffix.lower() in ('','.nd') else path
