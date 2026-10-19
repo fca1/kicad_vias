@@ -508,3 +508,14 @@ plugin.json, pas un routage général des requêtes vers les plugins vivants.
 Une entrée locale dédiée (état, génération, fusion, export) est une proposition,
 non implémentée et non autorisée à ce stade. Elle réutiliserait le service existant.
 Référence : https://dev-docs.kicad.org/en/apis-and-binding/ipc-api/for-addon-developers/
+
+
+## 19 octobre 2026 — Interface locale autorisée
+
+Implémentation status/generate/merge/export, serveur loopback avec jeton, cible
+explicite et verrou partagé avec les boutons. Mode sans dialogue disponible.
+61 tests réussis, dont contrat réseau, authentification, cibles et concurrence.
+Parcours réel sans clics encore à valider après installation de ce commit.
+L’installateur sauvegarde/copie les fichiers sans déplacer le dossier verrouillé
+par le cwd du plugin ouvert (échec WinError32 confirmé lors du commit précédent).
+Voir LOCAL_IPC.md. Moteur de placement inchangé.

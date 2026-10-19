@@ -55,15 +55,29 @@ def install(ref='HEAD',version='10.0'):
     target=(parent/'Kicad_Via').resolve()
     if target.parent!=parent or target.name!='Kicad_Via': raise ValueError('Destination inattendue.')
     parent.mkdir(parents=True,exist_ok=True)
-    # Déplacement réversible, limité au dossier exact du plugin, sans suppression.
-    if target.exists(): shutil.move(str(target),str(run/'backup'))
+    # Windows verrouille le cwd des plugins ouverts : déplacer le dossier peut
+    # échouer. Copier d’abord la sauvegarde, remplacer seulement les fichiers.
+    backup=run/'backup'
+    if target.exists():shutil.copytree(target,backup)
+    target.mkdir(exist_ok=True)
+    def copy_files(source):
+        for entry in source.rglob('*'):
+            if not entry.is_file():continue
+            destination=target/entry.relative_to(source)
+            destination.parent.mkdir(parents=True,exist_ok=True)
+            staged=destination.with_name(destination.name+'.installing')
+            shutil.copy2(entry,staged)
+            staged.replace(destination)
     try:
-        shutil.copytree(stage,target)
-        actual={str(f.relative_to(target)):hashlib.sha256(f.read_bytes()).hexdigest() for f in target.rglob('*') if f.is_file()}
-        if actual!=expected: raise ValueError('Écart SHA-256 après installation.')
+        copy_files(stage)
+        for entry in target.rglob('*'):
+            if entry.is_file() and '__pycache__' not in entry.parts and str(entry.relative_to(target)) not in expected:
+                entry.unlink()
+        actual={str(f.relative_to(target)):hashlib.sha256(f.read_bytes()).hexdigest()
+                for f in target.rglob('*') if f.is_file() and '__pycache__' not in f.parts}
+        if actual!=expected:raise ValueError('Écart SHA-256 après installation.')
     except BaseException:
-        if target.exists(): shutil.move(str(target),str(run/'failed_install'))
-        if (run/'backup').exists(): shutil.move(str(run/'backup'),str(target))
+        if backup.exists():copy_files(backup)
         raise
     manifest={'commit':commit,'target':str(target),'files':expected,'verified':True}
     (run/'manifest.json').write_text(json.dumps(manifest,indent=2),encoding='utf-8')

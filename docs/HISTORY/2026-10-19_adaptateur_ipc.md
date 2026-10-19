@@ -59,3 +59,7 @@ Utilisateur, après demande de génération et fusion Bottom :
 > ok
 Utilisateur :
 > Et est-ce que le plugin ne devrait pas avoir lui-même une porte d'entrée IPC pour pouvoir communiquer avec lui via KiCAD ? Est-ce qu'ils ont prévu cela ?
+
+
+Utilisateur :
+> Oui, ajoute cette interface IPC locale au plugin avec status, generate, merge et export, liée à la bonne instance KiCad. Teste le parcours sans clics, puis mets à jour la mémoire epi-git, commit, push main et réinstalle.

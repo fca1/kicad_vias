@@ -11,11 +11,13 @@ from tkinter import ttk,filedialog,messagebox
 sys.path.insert(0,str(Path(__file__).resolve().parent.parent))
 from kipy import KiCad
 from Kicad_Via.ipc_service import Session
+from Kicad_Via.local_ipc import Controller, LocalServer
 
 
 class Window:
     def __init__(self):
         self.root=tk.Tk();self.root.title('Kicad_Via — IPC');self.root.minsize(690,390)
+        self.controller=None;self.control_server=None
         self.events=queue.Queue();self.busy=False;self.session=None;self.layer_ids=[];self.result=None
         self.side=tk.StringVar(value='Top');self.size=tk.StringVar(value='0.65')
         self.grid=tk.BooleanVar(value=True);self.layer=tk.StringVar();self.path=tk.StringVar()
@@ -45,17 +47,30 @@ class Window:
         self.root.after(100,self.poll);self.refresh()
 
     def close(self):
-        if not self.busy:self.root.destroy()
+        if self.busy:return
+        if self.controller and not self.controller.lock.acquire(blocking=False):return
+        try:
+            if self.control_server:self.control_server.close()
+            self.root.destroy()
+        finally:
+            if self.controller:self.controller.lock.release()
 
     def launch(self,operation,callback):
         if self.busy:return
         self.busy=True;self.status.set('Opération en cours…')
         for button in (self.generate_button,self.merge_button,self.fusion_button):button.configure(state='disabled')
         def worker():
-            try:self.events.put((callback,operation(),None))
+            locked=False
+            try:
+                if self.controller:
+                    locked=self.controller.lock.acquire(blocking=False)
+                    if not locked:raise ValueError('Une commande IPC locale est en cours.')
+                self.events.put((callback,operation(),None))
             except Exception as error:
                 log=Path.home()/'AppData/Local/Kicad_Via/ipc_external_error.log';log.parent.mkdir(parents=True,exist_ok=True)
                 log.write_text(traceback.format_exc(),encoding='utf-8');self.events.put((callback,None,str(error)))
+            finally:
+                if locked:self.controller.lock.release()
         threading.Thread(target=worker,daemon=True).start()
 
     def poll(self):
@@ -72,11 +87,13 @@ class Window:
             if self.session is None:
                 if not os.environ.get('KICAD_API_SOCKET'):raise ValueError('Lancez Kicad_Via depuis le bouton de KiCad.')
                 self.session=Session(KiCad(timeout_ms=10000))
+                self.controller=Controller(self.session,os.environ['KICAD_API_SOCKET'])
+                self.control_server=LocalServer(self.controller)
             else:self.session.refresh()
         self.launch(operation,lambda result:self.select_side())
 
     def select_side(self):
-        if not self.session:return
+        if not self.session or (self.controller and self.controller.lock.locked()):return
         self.layer_ids=self.session.available_layers(self.side.get())
         names=[self.session.names[i] for i in self.layer_ids];self.layers.configure(values=names)
         self.layer.set(names[0] if names else '')
