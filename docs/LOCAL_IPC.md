@@ -49,3 +49,13 @@ OS est libéré. Le client ne cherche jamais un autre serveur en cas d’échec.
 
 L’interface concerne le chemin externe IPC de la nightly. Le lanceur natif KiCad10
 reste inchangé. Les limites géométriques de IPC_MIGRATION.md restent applicables.
+
+## Validation
+
+Sur nightly 10.99.0-2520 : parcours réseau réel sans clics, Top et Bottom,
+tableaux identiques au parcours GUI, 400/411 objets relus et groupes vérifiés.
+Exports synthétiques : 662/725 traits. Pas d’exécution de l’ULP dans Fusion.
+62 tests automatiques couvrent aussi les mauvaises identités, l’authentification,
+le conflit d’opérations, le second serveur et la source Fusion non finie.
+Un dialogue ouvert avant installation doit être fermé puis rouvert pour charger
+la nouvelle interface. La carte KiCad reste ouverte.

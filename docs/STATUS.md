@@ -561,3 +561,30 @@ Parcours réel sans clics encore à valider après installation de ce commit.
 L’installateur sauvegarde/copie les fichiers sans déplacer le dossier verrouillé
 par le cwd du plugin ouvert (échec WinError32 confirmé lors du commit précédent).
 Voir LOCAL_IPC.md. Moteur de placement inchangé.
+
+
+## 19 octobre 2026 — Pilotage local testé sans clics
+
+62 tests automatiques réussis. Le paquet installé (Python 3.12, serveur externe)
+a été piloté par son client JSON, sur la carte synthétique nightly 10.99.0-2520.
+status, generate et merge réussissent sur Top et Bottom. Relecture indépendante :
+400 objets Top/3 labels sur F.SilkS, 411 Bottom/4 labels sur B.SilkS, groupes
+complets et miroirs conformes, aucun aperçu restant. Les deux tableaux sont
+identiques octet par octet à ceux du parcours graphique précédent.
+
+export réussit sur les deux faces : ULP et RUN, 662 traits SilkscreenTop et
+725 traits SilkscreenBottom. Une seconde empreinte synthétique a été ajoutée
+par IPC à la seule carte de test pour vérifier les deux origines d’alignement.
+Source BRD synthétique ; aucun script n’a été exécuté dans Fusion.
+L’essai a découvert un import math manquant dans fusion_protocol.read_source ;
+preuve : math.isfinite appelé sans import, NameError reproduit. Import corrigé
+et test source valide/non finie ajouté. L’initialisation du dialogue publie sa
+session uniquement après acquisition du serveur, pour qu’un conflit de verrou
+ne laisse pas un dialogue connecté sans son interface locale.
+
+Installation depuis les commits et contrôles SHA-256 réussis sur 10.0 et 10.99,
+y compris avec l’ancien dialogue ouvert. Ce dialogue déjà lancé conserve son
+ancien code : le rouvrir charge l’interface locale ; aucune fermeture de carte
+n’est requise. Serveur sans dialogue de test arrêté après validation pour libérer
+le verrou d’instance. Voir LOCAL_IPC.md pour l’utilisation, l’authentification,
+les identités de cible, les timeouts et les limites héritées de la capture IPC.

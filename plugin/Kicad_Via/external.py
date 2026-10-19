@@ -86,9 +86,12 @@ class Window:
         def operation():
             if self.session is None:
                 if not os.environ.get('KICAD_API_SOCKET'):raise ValueError('Lancez Kicad_Via depuis le bouton de KiCad.')
-                self.session=Session(KiCad(timeout_ms=10000))
-                self.controller=Controller(self.session,os.environ['KICAD_API_SOCKET'])
-                self.control_server=LocalServer(self.controller)
+                session=Session(KiCad(timeout_ms=10000))
+                controller=Controller(session,os.environ['KICAD_API_SOCKET'])
+                server=LocalServer(controller)
+                # Publier l'ensemble seulement après acquisition du serveur : un
+                # conflit ne doit pas laisser un dialogue partiellement connecté.
+                self.session=session;self.controller=controller;self.control_server=server
             else:self.session.refresh()
         self.launch(operation,lambda result:self.select_side())
 
